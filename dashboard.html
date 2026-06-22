@@ -1,0 +1,1609 @@
+<!doctype html>
+<html lang="en" class="dark scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RyanBet — VIP Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            fontFamily: {
+              bebas: ['"Bebas Neue"', "cursive"],
+              manrope: ["Manrope", "sans-serif"],
+              mono: ['"IBM Plex Mono"', "monospace"],
+            },
+            colors: {
+              ink: { DEFAULT: "#0c0e14", 2: "#1a1d28", 3: "#252836" },
+              surface: "#2e3247",
+              red: {
+                DEFAULT: "#e8232a",
+                light: "#ff6b70",
+                dim: "rgba(232,35,42,0.10)",
+              },
+              gold: "#f4c430",
+              green: "#2ecc8a",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        font-family: "Manrope", sans-serif;
+      }
+      .font-bebas {
+        font-family: "Bebas Neue", cursive;
+      }
+      .font-mono-ibm {
+        font-family: "IBM Plex Mono", monospace;
+      }
+      .logo-dot {
+        animation: pulse2 2s infinite;
+      }
+      @keyframes pulse2 {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.4;
+        }
+      }
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #e8232a;
+        border-radius: 3px;
+      }
+
+      /* Sidebar */
+      .sidebar-link {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        color: #8a8fa8;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+        cursor: pointer;
+        text-decoration: none;
+      }
+      .sidebar-link:hover {
+        background: rgba(232, 35, 42, 0.08);
+        color: #f7f8fc;
+      }
+      .sidebar-link.active {
+        background: rgba(232, 35, 42, 0.12);
+        color: #ff6b70;
+        border-left: 3px solid #e8232a;
+      }
+
+      /* Balance card glow */
+      .balance-card {
+        position: relative;
+        overflow: hidden;
+      }
+      .balance-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse 80% 60% at 50% -10%,
+          rgba(232, 35, 42, 0.18) 0%,
+          transparent 70%
+        );
+        pointer-events: none;
+      }
+
+      /* Pick card */
+      .pick-card {
+        transition:
+          transform 0.2s,
+          border-color 0.2s;
+      }
+      .pick-card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(232, 35, 42, 0.3);
+      }
+
+      /* Status badge */
+      .badge-win {
+        background: rgba(46, 204, 138, 0.12);
+        color: #2ecc8a;
+        border: 1px solid rgba(46, 204, 138, 0.3);
+      }
+      .badge-loss {
+        background: rgba(232, 35, 42, 0.1);
+        color: #ff6b70;
+        border: 1px solid rgba(232, 35, 42, 0.25);
+      }
+      .badge-pending {
+        background: rgba(244, 196, 48, 0.1);
+        color: #f4c430;
+        border: 1px solid rgba(244, 196, 48, 0.25);
+      }
+
+      /* Deposit modal */
+      .modal-overlay {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s;
+      }
+      .modal-overlay.active {
+        opacity: 1;
+        pointer-events: all;
+      }
+      .modal-overlay .modal-box {
+        transform: translateY(20px);
+        transition: transform 0.25s;
+      }
+      .modal-overlay.active .modal-box {
+        transform: translateY(0);
+      }
+
+      input:focus,
+      select:focus {
+        border-color: #e8232a !important;
+        box-shadow: 0 0 0 3px rgba(232, 35, 42, 0.12);
+        outline: none;
+      }
+
+      /* Tabs */
+      .dash-tab {
+        cursor: pointer;
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.88rem;
+        color: #8a8fa8;
+        transition: all 0.2s;
+      }
+      .dash-tab.active {
+        background: #e8232a;
+        color: #fff;
+      }
+
+      /* Skeleton loader */
+      .skeleton {
+        background: linear-gradient(
+          90deg,
+          #1a1d28 25%,
+          #252836 50%,
+          #1a1d28 75%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 8px;
+      }
+      @keyframes shimmer {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+
+      /* Notification dot */
+      .notif-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #e8232a;
+        animation: pulse2 1.5s infinite;
+      }
+
+      html.light body {
+        background: #f0f2f8;
+        color: #0c0e14;
+      }
+      html.light .bg-\[\#0c0e14\] {
+        background: #f0f2f8 !important;
+      }
+      html.light .bg-\[\#1a1d28\] {
+        background: #ffffff !important;
+      }
+      html.light .bg-\[\#252836\] {
+        background: #f0f2f8 !important;
+      }
+    </style>
+  </head>
+  <body class="bg-[#0c0e14] text-[#f7f8fc] overflow-x-hidden">
+    <!-- ===== DEPOSIT MODAL ===== -->
+    <div
+      id="depositModal"
+      class="modal-overlay fixed inset-0 bg-black/70 z-[1000] flex items-center justify-center p-4"
+    >
+      <div
+        class="modal-box bg-[#1a1d28] border border-white/7 rounded-2xl p-8 w-full max-w-[420px] relative shadow-2xl"
+      >
+        <button
+          onclick="closeDeposit()"
+          class="absolute top-4 right-4 bg-[#252836] border border-white/10 text-[#8a8fa8] w-8 h-8 rounded-full cursor-pointer flex items-center justify-center hover:bg-[#e8232a] hover:text-white transition-all"
+        >
+          ✕
+        </button>
+        <div class="font-bebas text-[1.6rem] tracking-widest mb-1">
+          Deposit Funds
+        </div>
+        <p class="text-sm text-[#8a8fa8] mb-6">
+          Add funds to your RyanBet wallet balance.
+        </p>
+        <div class="flex flex-col gap-2 mb-4">
+          <label class="text-xs font-bold text-[#8a8fa8] tracking-widest"
+            >AMOUNT (USD)</label
+          >
+          <input
+            id="depositAmount"
+            type="number"
+            min="10"
+            placeholder="e.g. 500"
+            class="bg-[#252836] border border-white/10 text-[#f7f8fc] text-[0.95rem] px-[14px] py-[11px] rounded-xl placeholder-[#5c6077] w-full"
+          />
+        </div>
+        <div class="grid grid-cols-3 gap-2 mb-5">
+          <button
+            onclick="setDeposit(50)"
+            class="bg-[#252836] border border-white/10 text-[#8a8fa8] text-sm font-bold py-2 rounded-lg hover:border-[#e8232a] hover:text-[#ff6b70] transition-all"
+          >
+            $50
+          </button>
+          <button
+            onclick="setDeposit(100)"
+            class="bg-[#252836] border border-white/10 text-[#8a8fa8] text-sm font-bold py-2 rounded-lg hover:border-[#e8232a] hover:text-[#ff6b70] transition-all"
+          >
+            $100
+          </button>
+          <button
+            onclick="setDeposit(250)"
+            class="bg-[#252836] border border-white/10 text-[#8a8fa8] text-sm font-bold py-2 rounded-lg hover:border-[#e8232a] hover:text-[#ff6b70] transition-all"
+          >
+            $250
+          </button>
+          <button
+            onclick="setDeposit(500)"
+            class="bg-[#252836] border border-white/10 text-[#8a8fa8] text-sm font-bold py-2 rounded-lg hover:border-[#e8232a] hover:text-[#ff6b70] transition-all"
+          >
+            $500
+          </button>
+          <button
+            onclick="setDeposit(1000)"
+            class="bg-[#252836] border border-white/10 text-[#8a8fa8] text-sm font-bold py-2 rounded-lg hover:border-[#e8232a] hover:text-[#ff6b70] transition-all"
+          >
+            $1,000
+          </button>
+          <button
+            onclick="setDeposit(2000)"
+            class="bg-[#252836] border border-white/10 text-[#8a8fa8] text-sm font-bold py-2 rounded-lg hover:border-[#e8232a] hover:text-[#ff6b70] transition-all"
+          >
+            $2,000
+          </button>
+        </div>
+        <div
+          id="depositError"
+          class="hidden bg-[rgba(232,35,42,0.1)] border border-[rgba(232,35,42,0.3)] text-[#ff6b70] text-xs px-4 py-3 rounded-xl mb-4"
+        ></div>
+        <button
+          onclick="handleDeposit()"
+          class="w-full bg-[#e8232a] text-white border-none font-bold text-base py-[13px] rounded-xl cursor-pointer hover:bg-[#ff2e35] transition-all"
+        >
+          Confirm Deposit
+        </button>
+        <p class="text-xs text-[#5c6077] text-center mt-3">
+          Demo mode — no real funds are transferred.
+        </p>
+      </div>
+    </div>
+
+    <!-- ===== WITHDRAW MODAL ===== -->
+    <div
+      id="withdrawModal"
+      class="modal-overlay fixed inset-0 bg-black/70 z-[1000] flex items-center justify-center p-4"
+    >
+      <div
+        class="modal-box bg-[#1a1d28] border border-white/7 rounded-2xl p-8 w-full max-w-[420px] relative shadow-2xl"
+      >
+        <button
+          onclick="closeWithdraw()"
+          class="absolute top-4 right-4 bg-[#252836] border border-white/10 text-[#8a8fa8] w-8 h-8 rounded-full cursor-pointer flex items-center justify-center hover:bg-[#e8232a] hover:text-white transition-all"
+        >
+          ✕
+        </button>
+        <div class="font-bebas text-[1.6rem] tracking-widest mb-1">
+          Withdraw Funds
+        </div>
+        <p class="text-sm text-[#8a8fa8] mb-6">
+          Withdraw from your available balance.
+        </p>
+        <div class="flex flex-col gap-2 mb-4">
+          <label class="text-xs font-bold text-[#8a8fa8] tracking-widest"
+            >AMOUNT (USD)</label
+          >
+          <input
+            id="withdrawAmount"
+            type="number"
+            min="10"
+            placeholder="e.g. 200"
+            class="bg-[#252836] border border-white/10 text-[#f7f8fc] text-[0.95rem] px-[14px] py-[11px] rounded-xl placeholder-[#5c6077] w-full"
+          />
+        </div>
+        <div
+          id="withdrawError"
+          class="hidden bg-[rgba(232,35,42,0.1)] border border-[rgba(232,35,42,0.3)] text-[#ff6b70] text-xs px-4 py-3 rounded-xl mb-4"
+        ></div>
+        <button
+          onclick="handleWithdraw()"
+          class="w-full bg-[#1a1d28] border border-white/10 text-[#f7f8fc] font-bold text-base py-[13px] rounded-xl cursor-pointer hover:bg-[#252836] transition-all"
+        >
+          Request Withdrawal
+        </button>
+        <p class="text-xs text-[#5c6077] text-center mt-3">
+          Demo mode — no real funds are transferred.
+        </p>
+      </div>
+    </div>
+
+    <!-- ===== LAYOUT ===== -->
+    <div class="flex min-h-screen">
+      <!-- SIDEBAR -->
+      <aside
+        id="sidebar"
+        class="hidden lg:flex flex-col w-[240px] bg-[#0c0e14] border-r border-white/7 px-4 py-6 flex-shrink-0 sticky top-0 h-screen overflow-y-auto"
+      >
+        <a
+          href="index.html"
+          class="font-bebas text-[1.5rem] tracking-widest text-[#f7f8fc] flex items-center gap-2 no-underline mb-8"
+        >
+          <span
+            class="logo-dot w-[8px] h-[8px] rounded-full bg-[#e8232a] inline-block"
+          ></span>
+          RYANBET
+        </a>
+        <nav class="flex flex-col gap-1 flex-1">
+          <a
+            href="#"
+            onclick="showTab('overview')"
+            class="sidebar-link active"
+            id="nav-overview"
+          >
+            <span>📊</span> Overview
+          </a>
+          <a
+            href="#"
+            onclick="showTab('picks')"
+            class="sidebar-link"
+            id="nav-picks"
+          >
+            <span>🎯</span> Today's Picks
+          </a>
+          <a
+            href="#"
+            onclick="showTab('history')"
+            class="sidebar-link"
+            id="nav-history"
+          >
+            <span>📋</span> Pick History
+          </a>
+          <a
+            href="#"
+            onclick="showTab('wallet')"
+            class="sidebar-link"
+            id="nav-wallet"
+          >
+            <span>💰</span> Wallet
+          </a>
+          <a
+            href="#"
+            onclick="showTab('account')"
+            class="sidebar-link"
+            id="nav-account"
+          >
+            <span>👤</span> Account
+          </a>
+          <div class="mt-auto pt-6 border-t border-white/7 mt-6">
+            <a href="index.html" class="sidebar-link">
+              <span>🏠</span> Back to Site
+            </a>
+            <button
+              onclick="handleLogout()"
+              class="sidebar-link w-full text-left border-none bg-transparent mt-1 text-[#e8232a] hover:text-[#ff6b70]"
+            >
+              <span>🚪</span> Log Out
+            </button>
+          </div>
+        </nav>
+      </aside>
+
+      <!-- MAIN -->
+      <div class="flex-1 flex flex-col min-w-0">
+        <!-- TOP BAR -->
+        <header
+          class="sticky top-0 z-40 bg-[rgba(12,14,20,0.95)] backdrop-blur-md border-b border-white/7 px-4 md:px-8 h-[64px] flex items-center justify-between gap-4"
+        >
+          <!-- Mobile logo -->
+          <a
+            href="index.html"
+            class="lg:hidden font-bebas text-[1.4rem] tracking-widest text-[#f7f8fc] flex items-center gap-2 no-underline"
+          >
+            <span
+              class="logo-dot w-[7px] h-[7px] rounded-full bg-[#e8232a] inline-block"
+            ></span
+            >RYANBET
+          </a>
+          <div class="hidden lg:flex items-center gap-2">
+            <span class="text-[#5c6077] text-sm">Welcome back,</span>
+            <span id="headerName" class="font-bold text-[0.95rem]"
+              >Loading…</span
+            >
+            <span id="headerFlag" class="text-lg ml-1"></span>
+          </div>
+          <div class="flex items-center gap-3 ml-auto">
+            <!-- Live badge -->
+            <div
+              class="flex items-center gap-2 bg-[rgba(46,204,138,0.08)] border border-[rgba(46,204,138,0.2)] px-3 py-1.5 rounded-full"
+            >
+              <div class="notif-dot"></div>
+              <span
+                class="font-mono-ibm text-[0.65rem] tracking-widest text-[#2ecc8a]"
+                >VIP LIVE</span
+              >
+            </div>
+            <button
+              onclick="handleLogout()"
+              class="lg:hidden border border-white/10 text-[#8a8fa8] bg-transparent text-xs font-bold px-3 py-2 rounded-lg hover:text-[#e8232a] transition-all"
+            >
+              Log Out
+            </button>
+          </div>
+        </header>
+
+        <!-- MOBILE NAV -->
+        <div
+          class="lg:hidden flex gap-1 px-4 py-3 border-b border-white/7 overflow-x-auto"
+        >
+          <button
+            onclick="showTab('overview')"
+            id="mob-overview"
+            class="dash-tab active whitespace-nowrap"
+          >
+            Overview
+          </button>
+          <button
+            onclick="showTab('picks')"
+            id="mob-picks"
+            class="dash-tab whitespace-nowrap"
+          >
+            Picks
+          </button>
+          <button
+            onclick="showTab('history')"
+            id="mob-history"
+            class="dash-tab whitespace-nowrap"
+          >
+            History
+          </button>
+          <button
+            onclick="showTab('wallet')"
+            id="mob-wallet"
+            class="dash-tab whitespace-nowrap"
+          >
+            Wallet
+          </button>
+          <button
+            onclick="showTab('account')"
+            id="mob-account"
+            class="dash-tab whitespace-nowrap"
+          >
+            Account
+          </button>
+        </div>
+
+        <!-- PAGE CONTENT -->
+        <main class="flex-1 px-4 md:px-8 py-8 max-w-5xl w-full mx-auto">
+          <!-- ===== OVERVIEW TAB ===== -->
+          <div id="tab-overview">
+            <p
+              class="font-mono-ibm text-[0.68rem] tracking-[0.12em] text-[#e8232a] uppercase mb-1"
+            >
+              Dashboard
+            </p>
+            <h1
+              class="font-bebas text-[2.5rem] tracking-wide leading-none mb-6"
+            >
+              Your Overview
+            </h1>
+
+            <!-- BALANCE CARDS -->
+            <div
+              class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8"
+            >
+              <!-- Available Balance -->
+              <div
+                class="balance-card bg-[#1a1d28] border border-white/7 rounded-2xl p-6"
+              >
+                <div class="flex items-center justify-between mb-4">
+                  <span
+                    class="font-mono-ibm text-[0.65rem] tracking-widest text-[#5c6077] uppercase"
+                    >Available Balance</span
+                  >
+                  <span class="text-[1.3rem]">💳</span>
+                </div>
+                <div
+                  id="availableBalance"
+                  class="font-bebas text-[2.6rem] tracking-wide leading-none text-[#2ecc8a] mb-1"
+                >
+                  <span class="skeleton inline-block w-32 h-9">&nbsp;</span>
+                </div>
+                <p class="text-xs text-[#5c6077]">Ready to use</p>
+                <button
+                  onclick="openDeposit()"
+                  class="mt-4 w-full bg-[#e8232a] text-white border-none font-bold text-sm py-2.5 rounded-xl cursor-pointer hover:bg-[#ff2e35] transition-all"
+                >
+                  + Deposit
+                </button>
+              </div>
+
+              <!-- Deposited Total -->
+              <div
+                class="balance-card bg-[#1a1d28] border border-white/7 rounded-2xl p-6"
+              >
+                <div class="flex items-center justify-between mb-4">
+                  <span
+                    class="font-mono-ibm text-[0.65rem] tracking-widest text-[#5c6077] uppercase"
+                    >Total Deposited</span
+                  >
+                  <span class="text-[1.3rem]">📥</span>
+                </div>
+                <div
+                  id="depositedBalance"
+                  class="font-bebas text-[2.6rem] tracking-wide leading-none text-[#f4c430] mb-1"
+                >
+                  <span class="skeleton inline-block w-32 h-9">&nbsp;</span>
+                </div>
+                <p class="text-xs text-[#5c6077]">All-time deposits</p>
+                <button
+                  onclick="openWithdraw()"
+                  class="mt-4 w-full border border-white/10 text-[#f7f8fc] bg-transparent font-bold text-sm py-2.5 rounded-xl cursor-pointer hover:bg-white/5 transition-all"
+                >
+                  Withdraw
+                </button>
+              </div>
+
+              <!-- Membership -->
+              <div
+                class="balance-card bg-[#1a1d28] border border-white/7 rounded-2xl p-6"
+              >
+                <div class="flex items-center justify-between mb-4">
+                  <span
+                    class="font-mono-ibm text-[0.65rem] tracking-widests text-[#5c6077] uppercase"
+                    >Membership</span
+                  >
+                  <span class="text-[1.3rem]">⚡</span>
+                </div>
+                <div
+                  id="memberPlan"
+                  class="font-bebas text-[2.6rem] tracking-wide leading-none text-[#e8232a] mb-1"
+                >
+                  <span class="skeleton inline-block w-28 h-9">&nbsp;</span>
+                </div>
+                <p id="memberSince" class="text-xs text-[#5c6077]">
+                  Member since —
+                </p>
+                <a
+                  href="#pricing"
+                  onclick="showTab('account')"
+                  class="mt-4 block w-full border border-[rgba(232,35,42,0.4)] text-[#ff6b70] font-bold text-sm py-2.5 rounded-xl cursor-pointer hover:bg-[rgba(232,35,42,0.08)] transition-all text-center no-underline"
+                >
+                  Manage Plan
+                </a>
+              </div>
+            </div>
+
+            <!-- STATS ROW -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              <div
+                class="bg-[#1a1d28] border border-white/7 rounded-xl p-5 text-center"
+              >
+                <div class="font-bebas text-[2rem] text-[#2ecc8a]">85–9–4</div>
+                <div
+                  class="font-mono-ibm text-[0.62rem] tracking-widest text-[#5c6077] uppercase mt-1"
+                >
+                  Season Record
+                </div>
+              </div>
+              <div
+                class="bg-[#1a1d28] border border-white/7 rounded-xl p-5 text-center"
+              >
+                <div class="font-bebas text-[2rem]">
+                  90<span class="text-[#e8232a]">%</span>
+                </div>
+                <div
+                  class="font-mono-ibm text-[0.62rem] tracking-widest text-[#5c6077] uppercase mt-1"
+                >
+                  Win Rate ATS
+                </div>
+              </div>
+              <div
+                class="bg-[#1a1d28] border border-white/7 rounded-xl p-5 text-center"
+              >
+                <div class="font-bebas text-[2rem] text-[#f4c430]">+41.7u</div>
+                <div
+                  class="font-mono-ibm text-[0.62rem] tracking-widest text-[#5c6077] uppercase mt-1"
+                >
+                  Units Profit
+                </div>
+              </div>
+              <div
+                class="bg-[#1a1d28] border border-white/7 rounded-xl p-5 text-center"
+              >
+                <div class="font-bebas text-[2rem]">2,400+</div>
+                <div
+                  class="font-mono-ibm text-[0.62rem] tracking-widest text-[#5c6077] uppercase mt-1"
+                >
+                  Active Members
+                </div>
+              </div>
+            </div>
+
+            <!-- TODAY'S PICKS PREVIEW -->
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="font-bebas text-[1.6rem] tracking-wide">
+                Today's Picks
+              </h2>
+              <button
+                onclick="showTab('picks')"
+                class="text-xs font-bold text-[#e8232a] hover:text-[#ff6b70] transition-colors"
+              >
+                View All →
+              </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div
+                class="pick-card bg-[#1a1d28] border border-white/7 rounded-2xl p-5"
+              >
+                <div class="flex items-center justify-between mb-3">
+                  <span
+                    class="font-mono-ibm text-[0.63rem] tracking-widest text-[#e8232a] uppercase"
+                    >🏀 NBA · Tonight</span
+                  >
+                  <span
+                    class="badge-pending font-mono-ibm text-[0.63rem] tracking-widest px-2 py-0.5 rounded-full"
+                    >PENDING</span
+                  >
+                </div>
+                <h3 class="font-bold text-[1rem] mb-1">Celtics -6.5 ATS</h3>
+                <p class="text-sm text-[#8a8fa8] mb-3">
+                  DraftKings · Line: -6.5 (-110) · 1.5u
+                </p>
+                <p class="text-xs text-[#8a8fa8] leading-relaxed">
+                  Back-to-back rest advantage + home court. Heat missing their
+                  starting PG. Celtics cover comfortably.
+                </p>
+              </div>
+              <div
+                class="pick-card bg-[#1a1d28] border border-white/7 rounded-2xl p-5"
+              >
+                <div class="flex items-center justify-between mb-3">
+                  <span
+                    class="font-mono-ibm text-[0.63rem] tracking-widest text-[#e8232a] uppercase"
+                    >🏈 NFL · Sunday</span
+                  >
+                  <span
+                    class="badge-pending font-mono-ibm text-[0.63rem] tracking-widest px-2 py-0.5 rounded-full"
+                    >PENDING</span
+                  >
+                </div>
+                <h3 class="font-bold text-[1rem] mb-1">Eagles +3 ATS</h3>
+                <p class="text-sm text-[#8a8fa8] mb-3">
+                  FanDuel · Line: +3 (-108) · 1.0u
+                </p>
+                <p class="text-xs text-[#8a8fa8] leading-relaxed">
+                  Sharp reversal on home dog — public hammering Cowboys but line
+                  hasn't moved. Eagles cover late.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== PICKS TAB ===== -->
+          <div id="tab-picks" class="hidden">
+            <p
+              class="font-mono-ibm text-[0.68rem] tracking-[0.12em] text-[#e8232a] uppercase mb-1"
+            >
+              VIP Access
+            </p>
+            <h1
+              class="font-bebas text-[2.5rem] tracking-wide leading-none mb-6"
+            >
+              Today's Picks
+            </h1>
+            <div
+              class="flex items-center gap-2 bg-[rgba(46,204,138,0.08)] border border-[rgba(46,204,138,0.2)] px-4 py-3 rounded-xl mb-6"
+            >
+              <div class="notif-dot flex-shrink-0"></div>
+              <p class="text-sm text-[#2ecc8a] font-semibold">
+                Live — picks posted this morning. More dropping tonight.
+              </p>
+            </div>
+            <div class="flex flex-col gap-4">
+              <div
+                class="pick-card bg-[#1a1d28] border border-white/7 rounded-2xl p-6"
+              >
+                <div class="flex items-center justify-between mb-3">
+                  <span
+                    class="font-mono-ibm text-[0.63rem] tracking-widest text-[#e8232a] uppercase"
+                    >🏀 NBA · 7:30 PM ET</span
+                  >
+                  <span
+                    class="badge-pending font-mono-ibm text-[0.63rem] tracking-widest px-2 py-1 rounded-full"
+                    >PENDING</span
+                  >
+                </div>
+                <h3 class="font-bold text-[1.1rem] mb-1">
+                  Boston Celtics -6.5 ATS
+                </h3>
+                <div
+                  class="flex flex-wrap gap-3 text-xs text-[#5c6077] font-mono-ibm mb-3"
+                >
+                  <span>Book: DraftKings</span><span>·</span
+                  ><span>Line: -6.5 (-110)</span><span>·</span
+                  ><span>Unit Size: 1.5u</span>
+                </div>
+                <p class="text-sm text-[#8a8fa8] leading-relaxed">
+                  Back-to-back rest advantage for the Celtics. Heat's starting
+                  PG is doubtful — without him their pace drops sharply. We like
+                  Boston to cover at home. Line opened -4.5 and sharp money
+                  moved it to -6.5, which is unusual and confirms this angle.
+                </p>
+              </div>
+              <div
+                class="pick-card bg-[#1a1d28] border border-white/7 rounded-2xl p-6"
+              >
+                <div class="flex items-center justify-between mb-3">
+                  <span
+                    class="font-mono-ibm text-[0.63rem] tracking-widest text-[#e8232a] uppercase"
+                    >🏈 NFL · Sunday 4:25 PM ET</span
+                  >
+                  <span
+                    class="badge-pending font-mono-ibm text-[0.63rem] tracking-widest px-2 py-1 rounded-full"
+                    >PENDING</span
+                  >
+                </div>
+                <h3 class="font-bold text-[1.1rem] mb-1">
+                  Philadelphia Eagles +3 ATS
+                </h3>
+                <div
+                  class="flex flex-wrap gap-3 text-xs text-[#5c6077] font-mono-ibm mb-3"
+                >
+                  <span>Book: FanDuel</span><span>·</span
+                  ><span>Line: +3 (-108)</span><span>·</span
+                  ><span>Unit Size: 1.0u</span>
+                </div>
+                <p class="text-sm text-[#8a8fa8] leading-relaxed">
+                  Public money at 74% on Cowboys but the line has barely budged.
+                  Classic steam reversal spot. Eagles are home, coming off a bye
+                  week, with a motivated squad. We're backing the dog at +3.
+                </p>
+              </div>
+              <div
+                class="pick-card bg-[#1a1d28] border border-white/7 rounded-2xl p-6"
+              >
+                <div class="flex items-center justify-between mb-3">
+                  <span
+                    class="font-mono-ibm text-[0.63rem] tracking-widest text-[#e8232a] uppercase"
+                    >⚾ MLB · 8:10 PM ET</span
+                  >
+                  <span
+                    class="badge-pending font-mono-ibm text-[0.63rem] tracking-widest px-2 py-1 rounded-full"
+                    >PENDING</span
+                  >
+                </div>
+                <h3 class="font-bold text-[1.1rem] mb-1">Dodgers ML -130</h3>
+                <div
+                  class="flex flex-wrap gap-3 text-xs text-[#5c6077] font-mono-ibm mb-3"
+                >
+                  <span>Book: BetMGM</span><span>·</span><span>Line: -130</span
+                  ><span>·</span><span>Unit Size: 0.75u</span>
+                </div>
+                <p class="text-sm text-[#8a8fa8] leading-relaxed">
+                  Kershaw returning from IL. Opposing starter has a 5.80 ERA in
+                  his last 4 home starts. Dodgers bullpen well-rested. We're
+                  comfortable laying the price here on the ML.
+                </p>
+              </div>
+              <div
+                class="pick-card bg-[#1a1d28] border border-[rgba(232,35,42,0.3)] rounded-2xl p-6 opacity-60 relative overflow-hidden"
+              >
+                <div
+                  class="absolute inset-0 flex items-center justify-center bg-[rgba(12,14,20,0.7)] rounded-2xl z-10"
+                >
+                  <div class="text-center">
+                    <div class="text-3xl mb-2">🔒</div>
+                    <p class="font-bold text-sm">Early pick — drops tonight</p>
+                    <p class="text-xs text-[#8a8fa8] mt-1">
+                      Yearly & Lifetime members get 24hr advance
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between mb-3">
+                  <span
+                    class="font-mono-ibm text-[0.63rem] tracking-widest text-[#e8232a] uppercase"
+                    >🏒 NHL · Tomorrow</span
+                  >
+                  <span
+                    class="badge-pending font-mono-ibm text-[0.63rem] tracking-widest px-2 py-1 rounded-full"
+                    >EARLY</span
+                  >
+                </div>
+                <h3 class="font-bold text-[1.1rem] mb-1">████████ ML</h3>
+                <div
+                  class="flex flex-wrap gap-3 text-xs text-[#5c6077] font-mono-ibm mb-3"
+                >
+                  <span>Book: ████████</span><span>·</span
+                  ><span>Line: ████</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== HISTORY TAB ===== -->
+          <div id="tab-history" class="hidden">
+            <p
+              class="font-mono-ibm text-[0.68rem] tracking-[0.12em] text-[#e8232a] uppercase mb-1"
+            >
+              Record
+            </p>
+            <h1
+              class="font-bebas text-[2.5rem] tracking-wide leading-none mb-6"
+            >
+              Pick History
+            </h1>
+            <div
+              class="bg-[#1a1d28] border border-white/7 rounded-2xl overflow-hidden"
+            >
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr class="border-b border-white/7">
+                      <th
+                        class="text-left px-5 py-4 font-mono-ibm text-[0.63rem] tracking-widests text-[#5c6077] uppercase"
+                      >
+                        Date
+                      </th>
+                      <th
+                        class="text-left px-5 py-4 font-mono-ibm text-[0.63rem] tracking-widest text-[#5c6077] uppercase"
+                      >
+                        Sport
+                      </th>
+                      <th
+                        class="text-left px-5 py-4 font-mono-ibm text-[0.63rem] tracking-widest text-[#5c6077] uppercase"
+                      >
+                        Pick
+                      </th>
+                      <th
+                        class="text-left px-5 py-4 font-mono-ibm text-[0.63rem] tracking-widest text-[#5c6077] uppercase"
+                      >
+                        Units
+                      </th>
+                      <th
+                        class="text-left px-5 py-4 font-mono-ibm text-[0.63rem] tracking-widest text-[#5c6077] uppercase"
+                      >
+                        Result
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      class="border-b border-white/5 hover:bg-white/2 transition-colors"
+                    >
+                      <td
+                        class="px-5 py-4 text-[#5c6077] font-mono-ibm text-xs"
+                      >
+                        Jun 21
+                      </td>
+                      <td class="px-5 py-4">🏀 NBA</td>
+                      <td class="px-5 py-4 font-semibold">Celtics -6.5</td>
+                      <td class="px-5 py-4 font-mono-ibm text-xs">1.5u</td>
+                      <td class="px-5 py-4">
+                        <span
+                          class="badge-win font-mono-ibm text-[0.63rem] tracking-widest px-2 py-0.5 rounded-full"
+                          >WIN +1.5u</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-white/5 hover:bg-white/2 transition-colors"
+                    >
+                      <td
+                        class="px-5 py-4 text-[#5c6077] font-mono-ibm text-xs"
+                      >
+                        Jun 20
+                      </td>
+                      <td class="px-5 py-4">🏈 NFL</td>
+                      <td class="px-5 py-4 font-semibold">Chiefs -4.5</td>
+                      <td class="px-5 py-4 font-mono-ibm text-xs">1.0u</td>
+                      <td class="px-5 py-4">
+                        <span
+                          class="badge-win font-mono-ibm text-[0.63rem] tracking-widest px-2 py-0.5 rounded-full"
+                          >WIN +1.0u</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-white/5 hover:bg-white/2 transition-colors"
+                    >
+                      <td
+                        class="px-5 py-4 text-[#5c6077] font-mono-ibm text-xs"
+                      >
+                        Jun 20
+                      </td>
+                      <td class="px-5 py-4">⚾ MLB</td>
+                      <td class="px-5 py-4 font-semibold">Braves -1.5 RL</td>
+                      <td class="px-5 py-4 font-mono-ibm text-xs">0.75u</td>
+                      <td class="px-5 py-4">
+                        <span
+                          class="badge-loss font-mono-ibm text-[0.63rem] tracking-widest px-2 py-0.5 rounded-full"
+                          >LOSS -0.75u</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-white/5 hover:bg-white/2 transition-colors"
+                    >
+                      <td
+                        class="px-5 py-4 text-[#5c6077] font-mono-ibm text-xs"
+                      >
+                        Jun 19
+                      </td>
+                      <td class="px-5 py-4">🏒 NHL</td>
+                      <td class="px-5 py-4 font-semibold">Panthers ML -105</td>
+                      <td class="px-5 py-4 font-mono-ibm text-xs">1.0u</td>
+                      <td class="px-5 py-4">
+                        <span
+                          class="badge-win font-mono-ibm text-[0.63rem] tracking-widest px-2 py-0.5 rounded-full"
+                          >WIN +0.95u</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-white/5 hover:bg-white/2 transition-colors"
+                    >
+                      <td
+                        class="px-5 py-4 text-[#5c6077] font-mono-ibm text-xs"
+                      >
+                        Jun 19
+                      </td>
+                      <td class="px-5 py-4">🏀 NBA</td>
+                      <td class="px-5 py-4 font-semibold">Nuggets +5.5</td>
+                      <td class="px-5 py-4 font-mono-ibm text-xs">1.0u</td>
+                      <td class="px-5 py-4">
+                        <span
+                          class="badge-win font-mono-ibm text-[0.63rem] tracking-widest px-2 py-0.5 rounded-full"
+                          >WIN +1.0u</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-white/5 hover:bg-white/2 transition-colors"
+                    >
+                      <td
+                        class="px-5 py-4 text-[#5c6077] font-mono-ibm text-xs"
+                      >
+                        Jun 18
+                      </td>
+                      <td class="px-5 py-4">🎓 NCAA</td>
+                      <td class="px-5 py-4 font-semibold">Kansas +7</td>
+                      <td class="px-5 py-4 font-mono-ibm text-xs">0.5u</td>
+                      <td class="px-5 py-4">
+                        <span
+                          class="badge-win font-mono-ibm text-[0.63rem] tracking-widest px-2 py-0.5 rounded-full"
+                          >WIN +0.5u</span
+                        >
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-white/2 transition-colors">
+                      <td
+                        class="px-5 py-4 text-[#5c6077] font-mono-ibm text-xs"
+                      >
+                        Jun 17
+                      </td>
+                      <td class="px-5 py-4">⚾ MLB</td>
+                      <td class="px-5 py-4 font-semibold">Dodgers O8.5</td>
+                      <td class="px-5 py-4 font-mono-ibm text-xs">1.0u</td>
+                      <td class="px-5 py-4">
+                        <span
+                          class="badge-pending font-mono-ibm text-[0.63rem] tracking-widest px-2 py-0.5 rounded-full"
+                          >PUSH</span
+                        >
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <p class="text-xs text-[#5c6077] mt-4">
+              Showing last 7 picks. Full history available in VIP chat.
+            </p>
+          </div>
+
+          <!-- ===== WALLET TAB ===== -->
+          <div id="tab-wallet" class="hidden">
+            <p
+              class="font-mono-ibm text-[0.68rem] tracking-[0.12em] text-[#e8232a] uppercase mb-1"
+            >
+              Funds
+            </p>
+            <h1
+              class="font-bebas text-[2.5rem] tracking-wide leading-none mb-6"
+            >
+              Your Wallet
+            </h1>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+              <div
+                class="balance-card bg-[#1a1d28] border border-white/7 rounded-2xl p-6"
+              >
+                <div class="flex items-center gap-3 mb-4">
+                  <div
+                    class="w-10 h-10 rounded-xl bg-[rgba(46,204,138,0.12)] border border-[rgba(46,204,138,0.2)] flex items-center justify-center text-xl"
+                  >
+                    💳
+                  </div>
+                  <div>
+                    <div
+                      class="font-mono-ibm text-[0.63rem] tracking-widest text-[#5c6077] uppercase"
+                    >
+                      Available Balance
+                    </div>
+                    <div class="text-xs text-[#8a8fa8]">
+                      Ready to use or withdraw
+                    </div>
+                  </div>
+                </div>
+                <div
+                  id="walletAvailable"
+                  class="font-bebas text-[3rem] tracking-wide leading-none text-[#2ecc8a] mb-4"
+                >
+                  <span class="skeleton inline-block w-40 h-10">&nbsp;</span>
+                </div>
+                <button
+                  onclick="openDeposit()"
+                  class="w-full bg-[#e8232a] text-white border-none font-bold text-sm py-3 rounded-xl cursor-pointer hover:bg-[#ff2e35] transition-all"
+                >
+                  + Deposit Funds
+                </button>
+              </div>
+              <div
+                class="balance-card bg-[#1a1d28] border border-white/7 rounded-2xl p-6"
+              >
+                <div class="flex items-center gap-3 mb-4">
+                  <div
+                    class="w-10 h-10 rounded-xl bg-[rgba(244,196,48,0.12)] border border-[rgba(244,196,48,0.2)] flex items-center justify-center text-xl"
+                  >
+                    📥
+                  </div>
+                  <div>
+                    <div
+                      class="font-mono-ibm text-[0.63rem] tracking-widest text-[#5c6077] uppercase"
+                    >
+                      Total Deposited
+                    </div>
+                    <div class="text-xs text-[#8a8fa8]">
+                      Cumulative all-time deposits
+                    </div>
+                  </div>
+                </div>
+                <div
+                  id="walletDeposited"
+                  class="font-bebas text-[3rem] tracking-wide leading-none text-[#f4c430] mb-4"
+                >
+                  <span class="skeleton inline-block w-40 h-10">&nbsp;</span>
+                </div>
+                <button
+                  onclick="openWithdraw()"
+                  class="w-full border border-white/10 text-[#f7f8fc] bg-transparent font-bold text-sm py-3 rounded-xl cursor-pointer hover:bg-white/5 transition-all"
+                >
+                  Request Withdrawal
+                </button>
+              </div>
+            </div>
+
+            <!-- Transaction history -->
+            <h2 class="font-bebas text-[1.5rem] tracking-wide mb-4">
+              Recent Transactions
+            </h2>
+            <div id="txList" class="flex flex-col gap-3">
+              <div class="text-center py-8 text-[#5c6077]">
+                <div class="text-3xl mb-2">📭</div>
+                <p class="text-sm">
+                  No transactions yet. Make your first deposit!
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== ACCOUNT TAB ===== -->
+          <div id="tab-account" class="hidden">
+            <p
+              class="font-mono-ibm text-[0.68rem] tracking-[0.12em] text-[#e8232a] uppercase mb-1"
+            >
+              Settings
+            </p>
+            <h1
+              class="font-bebas text-[2.5rem] tracking-wide leading-none mb-6"
+            >
+              Your Account
+            </h1>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div class="bg-[#1a1d28] border border-white/7 rounded-2xl p-6">
+                <h2 class="font-bold text-base mb-5">Profile Info</h2>
+                <div class="flex flex-col gap-4">
+                  <div class="flex flex-col gap-1.5">
+                    <label
+                      class="text-xs font-bold text-[#5c6077] tracking-widest uppercase"
+                      >Full Name</label
+                    >
+                    <div
+                      id="acctName"
+                      class="bg-[#252836] border border-white/7 text-[#f7f8fc] text-[0.95rem] px-4 py-3 rounded-xl font-semibold"
+                    >
+                      <span class="skeleton inline-block w-32 h-5">&nbsp;</span>
+                    </div>
+                  </div>
+                  <div class="flex flex-col gap-1.5">
+                    <label
+                      class="text-xs font-bold text-[#5c6077] tracking-widest uppercase"
+                      >Email</label
+                    >
+                    <div
+                      id="acctEmail"
+                      class="bg-[#252836] border border-white/7 text-[#8a8fa8] text-[0.9rem] px-4 py-3 rounded-xl font-mono-ibm text-xs"
+                    >
+                      <span class="skeleton inline-block w-48 h-5">&nbsp;</span>
+                    </div>
+                  </div>
+                  <div class="flex flex-col gap-1.5">
+                    <label
+                      class="text-xs font-bold text-[#5c6077] tracking-widest uppercase"
+                      >Country</label
+                    >
+                    <div
+                      id="acctCountry"
+                      class="bg-[#252836] border border-white/7 text-[#f7f8fc] text-[0.95rem] px-4 py-3 rounded-xl"
+                    >
+                      <span class="skeleton inline-block w-24 h-5">&nbsp;</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-[#1a1d28] border border-white/7 rounded-2xl p-6">
+                <h2 class="font-bold text-base mb-5">Membership</h2>
+                <div class="flex flex-col gap-4">
+                  <div
+                    class="bg-[#252836] rounded-xl p-4 flex items-center justify-between"
+                  >
+                    <div>
+                      <div
+                        class="font-mono-ibm text-[0.63rem] tracking-widest text-[#5c6077] uppercase mb-1"
+                      >
+                        Current Plan
+                      </div>
+                      <div
+                        id="acctPlan"
+                        class="font-bebas text-[1.6rem] text-[#e8232a] tracking-wide"
+                      >
+                        <span class="skeleton inline-block w-24 h-7"
+                          >&nbsp;</span
+                        >
+                      </div>
+                    </div>
+                    <span class="text-3xl">⚡</span>
+                  </div>
+                  <div class="bg-[#252836] rounded-xl p-4">
+                    <div
+                      class="font-mono-ibm text-[0.63rem] tracking-widest text-[#5c6077] uppercase mb-1"
+                    >
+                      Member Since
+                    </div>
+                    <div id="acctSince" class="font-semibold text-[0.95rem]">
+                      <span class="skeleton inline-block w-32 h-5">&nbsp;</span>
+                    </div>
+                  </div>
+                  <a
+                    href="index.html#pricing"
+                    class="w-full bg-[#e8232a] text-white font-bold text-sm py-3 rounded-xl cursor-pointer hover:bg-[#ff2e35] transition-all text-center block no-underline"
+                  >
+                    Upgrade Plan
+                  </a>
+                  <button
+                    onclick="handleLogout()"
+                    class="w-full border border-[rgba(232,35,42,0.3)] text-[#ff6b70] bg-transparent font-bold text-sm py-3 rounded-xl cursor-pointer hover:bg-[rgba(232,35,42,0.08)] transition-all"
+                  >
+                    Log Out
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      // ── Supabase ────────────────────────────────────────────────
+      const { createClient } = supabase;
+      const sb = createClient(
+        "https://yrzhstrevycvchaozjrj.supabase.co",
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlyemhzdHJldnljdmNoYW96anJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMzkyODYsImV4cCI6MjA5NzcxNTI4Nn0.NPzbARyaViAmcr4wMSxKHHE6BTCINgliPUlRwRJVDTI",
+      );
+
+      // ── State ───────────────────────────────────────────────────
+      let currentUser = null;
+      let profile = null;
+      let transactions = [];
+
+      // ── Auth guard ──────────────────────────────────────────────
+      async function init() {
+        const {
+          data: { session },
+        } = await sb.auth.getSession();
+        if (!session) {
+          window.location.href = "index.html";
+          return;
+        }
+        currentUser = session.user;
+        await loadProfile();
+      }
+
+      // ── Load profile ────────────────────────────────────────────
+      async function loadProfile() {
+        const { data, error } = await sb
+          .from("users")
+          .select("*")
+          .eq("id", currentUser.id)
+          .single();
+
+        if (error || !data) {
+          // Profile row doesn't exist yet — create a default one
+          const meta = currentUser.user_metadata || {};
+          const { data: newProfile } = await sb
+            .from("users")
+            .insert({
+              id: currentUser.id,
+              first_name: meta.first_name || "VIP",
+              last_name: meta.last_name || "Member",
+              country: "US",
+              flag: "🇺🇸",
+              plan: "monthly",
+              balance: 0,
+              deposited: 0,
+            })
+            .select()
+            .single();
+          profile = newProfile || {
+            first_name: meta.first_name || "VIP",
+            last_name: meta.last_name || "Member",
+            country: "US",
+            flag: "🇺🇸",
+            plan: "monthly",
+            balance: 0,
+            deposited: 0,
+          };
+        } else {
+          profile = data;
+          // Ensure balance columns exist (add defaults if null)
+          if (profile.balance == null) profile.balance = 0;
+          if (profile.deposited == null) profile.deposited = 0;
+        }
+
+        renderProfile();
+        await loadTransactions();
+      }
+
+      // ── Render profile data into the UI ─────────────────────────
+      function renderProfile() {
+        const fullName =
+          `${profile.first_name || ""} ${profile.last_name || ""}`.trim() ||
+          "Member";
+        const email = currentUser.email || "—";
+        const plan = (profile.plan || "monthly").toUpperCase();
+        const joinDate = new Date(currentUser.created_at).toLocaleDateString(
+          "en-US",
+          { month: "long", year: "numeric" },
+        );
+        const balance = formatMoney(profile.balance || 0);
+        const deposited = formatMoney(profile.deposited || 0);
+
+        // Header
+        document.getElementById("headerName").textContent =
+          profile.first_name || "Member";
+        document.getElementById("headerFlag").textContent = profile.flag || "";
+
+        // Overview
+        document.getElementById("availableBalance").textContent = balance;
+        document.getElementById("depositedBalance").textContent = deposited;
+        document.getElementById("memberPlan").textContent = plan;
+        document.getElementById("memberSince").textContent =
+          "Member since " + joinDate;
+
+        // Wallet
+        document.getElementById("walletAvailable").textContent = balance;
+        document.getElementById("walletDeposited").textContent = deposited;
+
+        // Account
+        document.getElementById("acctName").textContent = fullName;
+        document.getElementById("acctEmail").textContent = email;
+        document.getElementById("acctCountry").textContent =
+          (profile.flag || "") + " " + (profile.country || "—");
+        document.getElementById("acctPlan").textContent = plan;
+        document.getElementById("acctSince").textContent = joinDate;
+      }
+
+      function formatMoney(n) {
+        return (
+          "$" +
+          Number(n).toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })
+        );
+      }
+
+      // ── Transactions ─────────────────────────────────────────────
+      async function loadTransactions() {
+        // Try to fetch from a transactions table if it exists
+        const { data, error } = await sb
+          .from("transactions")
+          .select("*")
+          .eq("user_id", currentUser.id)
+          .order("created_at", { ascending: false })
+          .limit(20);
+
+        transactions = !error && data ? data : [];
+        renderTransactions();
+      }
+
+      function renderTransactions() {
+        const list = document.getElementById("txList");
+        if (!transactions.length) {
+          list.innerHTML = `<div class="text-center py-8 text-[#5c6077]"><div class="text-3xl mb-2">📭</div><p class="text-sm">No transactions yet. Make your first deposit!</p></div>`;
+          return;
+        }
+        list.innerHTML = transactions
+          .map((tx) => {
+            const isDeposit = tx.type === "deposit";
+            const date = new Date(tx.created_at).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            });
+            return `
+        <div class="bg-[#1a1d28] border border-white/7 rounded-xl px-5 py-4 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg ${isDeposit ? "bg-[rgba(46,204,138,0.1)]" : "bg-[rgba(232,35,42,0.1)]"}">
+              ${isDeposit ? "📥" : "📤"}
+            </div>
+            <div>
+              <div class="font-bold text-sm">${isDeposit ? "Deposit" : "Withdrawal"}</div>
+              <div class="font-mono-ibm text-xs text-[#5c6077]">${date}</div>
+            </div>
+          </div>
+          <div class="font-bebas text-[1.2rem] ${isDeposit ? "text-[#2ecc8a]" : "text-[#ff6b70]"}">
+            ${isDeposit ? "+" : "-"}${formatMoney(tx.amount)}
+          </div>
+        </div>`;
+          })
+          .join("");
+      }
+
+      // ── Tab switching ────────────────────────────────────────────
+      const TABS = ["overview", "picks", "history", "wallet", "account"];
+      function showTab(name) {
+        TABS.forEach((t) => {
+          document
+            .getElementById("tab-" + t)
+            .classList.toggle("hidden", t !== name);
+          // Sidebar
+          const sl = document.getElementById("nav-" + t);
+          if (sl) sl.classList.toggle("active", t === name);
+          // Mobile
+          const mb = document.getElementById("mob-" + t);
+          if (mb) mb.classList.toggle("active", t === name);
+        });
+        return false;
+      }
+      window.showTab = showTab;
+
+      // ── Deposit ──────────────────────────────────────────────────
+      function openDeposit() {
+        document.getElementById("depositModal").classList.add("active");
+      }
+      function closeDeposit() {
+        document.getElementById("depositModal").classList.remove("active");
+      }
+      function setDeposit(n) {
+        document.getElementById("depositAmount").value = n;
+      }
+      window.openDeposit = openDeposit;
+      window.closeDeposit = closeDeposit;
+      window.setDeposit = setDeposit;
+
+      async function handleDeposit() {
+        const amt = parseFloat(document.getElementById("depositAmount").value);
+        const errEl = document.getElementById("depositError");
+        errEl.classList.add("hidden");
+
+        if (!amt || amt < 10) {
+          errEl.textContent = "Minimum deposit is $10.";
+          errEl.classList.remove("hidden");
+          return;
+        }
+
+        const btn = document.querySelector(
+          "#depositModal button[onclick='handleDeposit()']",
+        );
+        if (btn) {
+          btn.textContent = "Processing…";
+          btn.disabled = true;
+        }
+
+        const newBalance = (profile.balance || 0) + amt;
+        const newDeposited = (profile.deposited || 0) + amt;
+
+        // Update users table
+        const { error } = await sb
+          .from("users")
+          .update({
+            balance: newBalance,
+            deposited: newDeposited,
+          })
+          .eq("id", currentUser.id);
+
+        // Also log to transactions table (best-effort)
+        await sb.from("transactions").insert({
+          user_id: currentUser.id,
+          type: "deposit",
+          amount: amt,
+        });
+
+        if (btn) {
+          btn.textContent = "Confirm Deposit";
+          btn.disabled = false;
+        }
+
+        if (error) {
+          errEl.textContent = "Update failed: " + error.message;
+          errEl.classList.remove("hidden");
+          return;
+        }
+
+        profile.balance = newBalance;
+        profile.deposited = newDeposited;
+        renderProfile();
+        await loadTransactions();
+        closeDeposit();
+        document.getElementById("depositAmount").value = "";
+        showSuccessToast(`Deposited ${formatMoney(amt)} successfully!`);
+      }
+      window.handleDeposit = handleDeposit;
+
+      // ── Withdraw ─────────────────────────────────────────────────
+      function openWithdraw() {
+        document.getElementById("withdrawModal").classList.add("active");
+      }
+      function closeWithdraw() {
+        document.getElementById("withdrawModal").classList.remove("active");
+      }
+      window.openWithdraw = openWithdraw;
+      window.closeWithdraw = closeWithdraw;
+
+      async function handleWithdraw() {
+        const amt = parseFloat(document.getElementById("withdrawAmount").value);
+        const errEl = document.getElementById("withdrawError");
+        errEl.classList.add("hidden");
+
+        if (!amt || amt < 10) {
+          errEl.textContent = "Minimum withdrawal is $10.";
+          errEl.classList.remove("hidden");
+          return;
+        }
+        if (amt > (profile.balance || 0)) {
+          errEl.textContent = "Insufficient balance.";
+          errEl.classList.remove("hidden");
+          return;
+        }
+
+        const btn = document.querySelector(
+          "#withdrawModal button[onclick='handleWithdraw()']",
+        );
+        if (btn) {
+          btn.textContent = "Processing…";
+          btn.disabled = true;
+        }
+
+        const newBalance = (profile.balance || 0) - amt;
+        const { error } = await sb
+          .from("users")
+          .update({ balance: newBalance })
+          .eq("id", currentUser.id);
+        await sb
+          .from("transactions")
+          .insert({ user_id: currentUser.id, type: "withdrawal", amount: amt });
+
+        if (btn) {
+          btn.textContent = "Request Withdrawal";
+          btn.disabled = false;
+        }
+
+        if (error) {
+          errEl.textContent = "Update failed: " + error.message;
+          errEl.classList.remove("hidden");
+          return;
+        }
+
+        profile.balance = newBalance;
+        renderProfile();
+        await loadTransactions();
+        closeWithdraw();
+        document.getElementById("withdrawAmount").value = "";
+        showSuccessToast(`Withdrawal of ${formatMoney(amt)} requested!`);
+      }
+      window.handleWithdraw = handleWithdraw;
+
+      // ── Toast ────────────────────────────────────────────────────
+      function showSuccessToast(msg) {
+        const t = document.createElement("div");
+        t.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;background:#1a1d28;border:1px solid rgba(46,204,138,0.4);border-radius:14px;padding:14px 18px;color:#2ecc8a;font-weight:700;font-size:0.9rem;box-shadow:0 8px 32px rgba(0,0,0,0.5);transition:all 0.4s;opacity:0;transform:translateY(10px);`;
+        t.textContent = "✅ " + msg;
+        document.body.appendChild(t);
+        setTimeout(() => {
+          t.style.opacity = "1";
+          t.style.transform = "translateY(0)";
+        }, 10);
+        setTimeout(() => {
+          t.style.opacity = "0";
+          setTimeout(() => t.remove(), 400);
+        }, 3500);
+      }
+
+      // ── Logout ───────────────────────────────────────────────────
+      async function handleLogout() {
+        await sb.auth.signOut();
+        window.location.href = "index.html";
+      }
+      window.handleLogout = handleLogout;
+
+      // ── Modal close on overlay click ─────────────────────────────
+      document.getElementById("depositModal").addEventListener("click", (e) => {
+        if (e.target === document.getElementById("depositModal"))
+          closeDeposit();
+      });
+      document
+        .getElementById("withdrawModal")
+        .addEventListener("click", (e) => {
+          if (e.target === document.getElementById("withdrawModal"))
+            closeWithdraw();
+        });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          closeDeposit();
+          closeWithdraw();
+        }
+      });
+
+      // ── Boot ─────────────────────────────────────────────────────
+      init();
+    </script>
+  </body>
+</html>
