@@ -1,0 +1,2671 @@
+<!doctype html>
+<html lang="en" class="dark scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RyanBet — VIP Sports Picks Community</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            fontFamily: {
+              bebas: ['"Bebas Neue"', "cursive"],
+              manrope: ["Manrope", "sans-serif"],
+              mono: ['"IBM Plex Mono"', "monospace"],
+            },
+            colors: {
+              ink: { DEFAULT: "#0c0e14", 2: "#1a1d28", 3: "#252836" },
+              surface: "#2e3247",
+              red: {
+                DEFAULT: "#e8232a",
+                light: "#ff6b70",
+                dim: "rgba(232,35,42,0.10)",
+                glow: "rgba(232,35,42,0.18)",
+              },
+              gold: "#f4c430",
+              green: "#2ecc8a",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      :root {
+        --card-bg: #1a1d28;
+        --input-bg: #252836;
+        --modal-bg: #1a1d28;
+      }
+      html.light {
+        --card-bg: #ffffff;
+        --input-bg: #f0f2f8;
+        --modal-bg: #ffffff;
+      }
+      body {
+        font-family: "Manrope", sans-serif;
+      }
+      .font-bebas {
+        font-family: "Bebas Neue", cursive;
+      }
+      .font-mono-ibm {
+        font-family: "IBM Plex Mono", monospace;
+      }
+
+      /* Ticker */
+      .ticker-track {
+        display: inline-flex;
+        animation: ticker 30s linear infinite;
+      }
+      .ticker-track:hover {
+        animation-play-state: paused;
+      }
+      @keyframes ticker {
+        0% {
+          transform: translateX(0);
+        }
+        100% {
+          transform: translateX(-50%);
+        }
+      }
+
+      /* Logo dot */
+      .logo-dot {
+        animation: pulse2 2s infinite;
+      }
+      @keyframes pulse2 {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.4;
+        }
+      }
+
+      /* FAQ */
+      .faq-answer {
+        display: none;
+      }
+      .faq-item.open .faq-answer {
+        display: block;
+      }
+      .faq-item.open .faq-icon {
+        transform: rotate(180deg);
+        background: #e8232a;
+        color: #fff;
+        border-color: #e8232a;
+      }
+
+      /* Modal */
+      .modal-overlay {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s;
+      }
+      .modal-overlay.active {
+        opacity: 1;
+        pointer-events: all;
+      }
+      .modal-overlay .modal-box {
+        transform: translateY(20px);
+        transition: transform 0.25s;
+      }
+      .modal-overlay.active .modal-box {
+        transform: translateY(0);
+      }
+
+      /* Hero */
+      .hero-bg {
+        background-image: url("https://images.unsplash.com/photo-1546519638-68e109498ffc?w=1600&q=80");
+        background-size: cover;
+        background-position: center top;
+      }
+      .hero-overlay {
+        background:
+          linear-gradient(
+            to bottom,
+            rgba(12, 14, 20, 0.82) 0%,
+            rgba(12, 14, 20, 0.65) 40%,
+            rgba(12, 14, 20, 0.92) 100%
+          ),
+          radial-gradient(
+            ellipse 80% 60% at 50% 0%,
+            rgba(232, 35, 42, 0.22) 0%,
+            transparent 70%
+          );
+      }
+
+      /* Book bar */
+      .book-bar {
+        transition: width 1s ease;
+      }
+
+      /* Plan card hover */
+      .price-card {
+        transition: transform 0.2s;
+      }
+      .price-card:hover {
+        transform: translateY(-4px);
+      }
+
+      /* Sport pill */
+      .sport-pill {
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .sport-pill:hover {
+        border-color: #e8232a;
+        background: rgba(232, 35, 42, 0.1);
+        color: #ff6b70;
+      }
+      .sport-pill.active {
+        border-color: #e8232a !important;
+        background: rgba(232, 35, 42, 0.15) !important;
+        color: #ff6b70 !important;
+        box-shadow: 0 0 0 1px #e8232a;
+      }
+
+      /* News card */
+      .news-card {
+        transition:
+          transform 0.2s,
+          border-color 0.2s;
+      }
+      .news-card:hover {
+        transform: translateY(-3px);
+        border-color: rgba(232, 35, 42, 0.3);
+      }
+      .news-card[data-hidden="true"] {
+        display: none;
+      }
+
+      /* Lazy fade-in */
+      .lazy-section {
+        opacity: 0;
+        transform: translateY(24px);
+        transition:
+          opacity 0.6s ease,
+          transform 0.6s ease;
+      }
+      .lazy-section.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* Scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #e8232a;
+        border-radius: 3px;
+      }
+
+      /* Light mode */
+      html.light body {
+        background: #f0f2f8;
+        color: #0c0e14;
+      }
+      html.light .nav-bg {
+        background: rgba(240, 242, 248, 0.97);
+        border-color: rgba(0, 0, 0, 0.1);
+      }
+
+      /* Win notification toast */
+      .win-toast {
+        position: fixed;
+        bottom: 24px;
+        left: 24px;
+        z-index: 9999;
+        background: #1a1d28;
+        border: 1px solid rgba(46, 204, 138, 0.4);
+        border-radius: 16px;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        max-width: 320px;
+        box-shadow:
+          0 8px 32px rgba(0, 0, 0, 0.5),
+          0 0 0 1px rgba(46, 204, 138, 0.15);
+        transform: translateX(-120%);
+        opacity: 0;
+        transition:
+          transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+          opacity 0.35s ease;
+        pointer-events: none;
+      }
+      .win-toast.show {
+        transform: translateX(0);
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .win-toast .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #e8232a, #8b0000);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 0.85rem;
+        color: #fff;
+        flex-shrink: 0;
+      }
+      .win-toast .amount {
+        color: #2ecc8a;
+        font-weight: 800;
+        font-size: 1rem;
+      }
+      .win-toast .name {
+        color: #f7f8fc;
+        font-weight: 700;
+        font-size: 0.85rem;
+      }
+      .win-toast .book {
+        color: #8a8fa8;
+        font-size: 0.75rem;
+      }
+      .win-toast .live-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #2ecc8a;
+        animation: pulse2 1.5s infinite;
+        flex-shrink: 0;
+      }
+
+      /* Country flag in nav after login */
+      #navFlag {
+        display: none;
+        font-size: 1.3rem;
+      }
+
+      /* Select styling */
+      select {
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a8fa8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        padding-right: 38px !important;
+      }
+
+      /* Input focus glow */
+      input:focus,
+      select:focus {
+        border-color: #e8232a !important;
+        box-shadow: 0 0 0 3px rgba(232, 35, 42, 0.12);
+        outline: none;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-[#0c0e14] text-[#f7f8fc] overflow-x-hidden transition-colors duration-300"
+  >
+    <!-- ===================== WIN TOAST ===================== -->
+    <div id="winToast" class="win-toast">
+      <div class="live-dot"></div>
+      <div class="avatar" id="toastAvatar">MJ</div>
+      <div class="flex flex-col gap-0.5">
+        <div class="name" id="toastName">Marcus J.</div>
+        <div class="amount" id="toastAmount">+$4,000</div>
+        <div class="book" id="toastBook">Just won on FanDuel 🎉</div>
+      </div>
+    </div>
+
+    <!-- ===================== NAV ===================== -->
+    <nav
+      id="navbar"
+      class="sticky top-0 z-50 bg-[rgba(12,14,20,0.95)] backdrop-blur-md border-b border-white/7 px-4 md:px-12 flex items-center justify-between h-[68px] gap-4 transition-colors duration-300"
+    >
+      <a
+        href="#"
+        class="font-bebas text-[1.7rem] tracking-widest text-[#f7f8fc] flex items-center gap-2 no-underline flex-shrink-0"
+      >
+        <span
+          class="logo-dot w-[9px] h-[9px] rounded-full bg-red-DEFAULT inline-block"
+          style="
+            background: #e8232a;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            display: inline-block;
+          "
+        ></span>
+        RYANBET
+      </a>
+      <ul class="hidden lg:flex gap-7 list-none">
+        <li>
+          <a
+            href="#how"
+            class="text-[#8a8fa8] text-sm font-medium hover:text-[#f7f8fc] transition-colors no-underline"
+            >How It Works</a
+          >
+        </li>
+        <li>
+          <a
+            href="#picks"
+            class="text-[#8a8fa8] text-sm font-medium hover:text-[#f7f8fc] transition-colors no-underline"
+            >Sports</a
+          >
+        </li>
+        <li>
+          <a
+            href="#news"
+            class="text-[#8a8fa8] text-sm font-medium hover:text-[#f7f8fc] transition-colors no-underline"
+            >News</a
+          >
+        </li>
+        <li>
+          <a
+            href="#books"
+            class="text-[#8a8fa8] text-sm font-medium hover:text-[#f7f8fc] transition-colors no-underline"
+            >Sportsbooks</a
+          >
+        </li>
+        <li>
+          <a
+            href="#testimonials"
+            class="text-[#8a8fa8] text-sm font-medium hover:text-[#f7f8fc] transition-colors no-underline"
+            >Members</a
+          >
+        </li>
+        <li>
+          <a
+            href="#pricing"
+            class="text-[#8a8fa8] text-sm font-medium hover:text-[#f7f8fc] transition-colors no-underline"
+            >Pricing</a
+          >
+        </li>
+        <li>
+          <a
+            href="#faq"
+            class="text-[#8a8fa8] text-sm font-medium hover:text-[#f7f8fc] transition-colors no-underline"
+            >FAQ</a
+          >
+        </li>
+      </ul>
+      <div class="flex items-center gap-3 flex-shrink-0">
+        <span id="navFlag" title="Your country"></span>
+        <button
+          id="themeToggle"
+          aria-label="Toggle theme"
+          class="bg-[#252836] border border-white/10 text-[#f7f8fc] w-[38px] h-[38px] rounded-full cursor-pointer flex items-center justify-center text-base hover:border-red-DEFAULT hover:bg-[rgba(232,35,42,0.1)] transition-all"
+        >
+          🌙
+        </button>
+        <button
+          id="navLogin"
+          class="hidden lg:block border border-white/10 text-[#f7f8fc] bg-transparent font-bold text-sm px-[18px] py-[9px] rounded-lg cursor-pointer hover:border-white/30 hover:bg-[#252836] transition-all whitespace-nowrap"
+        >
+          Log In
+        </button>
+        <button
+          id="navSignup"
+          class="bg-[#e8232a] text-white font-bold text-sm px-[18px] py-[9px] rounded-lg cursor-pointer border-none hover:bg-[#ff2e35] hover:-translate-y-px transition-all whitespace-nowrap"
+        >
+          Join VIP
+        </button>
+        <button
+          id="ham"
+          aria-label="Menu"
+          class="lg:hidden flex flex-col gap-[5px] bg-transparent border-none text-[#f7f8fc] cursor-pointer p-1"
+        >
+          <span class="block w-[22px] h-[2px] bg-current"></span>
+          <span class="block w-[22px] h-[2px] bg-current"></span>
+          <span class="block w-[22px] h-[2px] bg-current"></span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div
+      id="mobileMenu"
+      class="hidden bg-[#1a1d28] border-t border-white/7 px-4 py-5 flex-col gap-4"
+    >
+      <a
+        href="#how"
+        class="text-[#8a8fa8] font-medium text-base no-underline mobile-link"
+        >How It Works</a
+      >
+      <a
+        href="#picks"
+        class="text-[#8a8fa8] font-medium text-base no-underline mobile-link"
+        >Sports</a
+      >
+      <a
+        href="#news"
+        class="text-[#8a8fa8] font-medium text-base no-underline mobile-link"
+        >News</a
+      >
+      <a
+        href="#books"
+        class="text-[#8a8fa8] font-medium text-base no-underline mobile-link"
+        >Sportsbooks</a
+      >
+      <a
+        href="#testimonials"
+        class="text-[#8a8fa8] font-medium text-base no-underline mobile-link"
+        >Members</a
+      >
+      <a
+        href="#pricing"
+        class="text-[#8a8fa8] font-medium text-base no-underline mobile-link"
+        >Pricing</a
+      >
+      <a
+        href="#faq"
+        class="text-[#8a8fa8] font-medium text-base no-underline mobile-link"
+        >FAQ</a
+      >
+      <button
+        onclick="openModal('login')"
+        class="border border-white/10 bg-transparent text-[#f7f8fc] font-bold text-[0.9rem] py-[10px] rounded-lg cursor-pointer"
+      >
+        Log In
+      </button>
+      <button
+        onclick="openModal('signup')"
+        class="bg-[#e8232a] text-white border-none font-bold text-[0.9rem] py-[10px] rounded-lg cursor-pointer"
+      >
+        Join VIP
+      </button>
+    </div>
+
+    <!-- ===================== AUTH MODAL ===================== -->
+    <div
+      id="authModal"
+      class="modal-overlay fixed inset-0 bg-black/70 z-[1000] flex items-center justify-center p-4 overflow-y-auto"
+    >
+      <div
+        class="modal-box bg-[var(--modal-bg,#1a1d28)] border border-white/7 rounded-2xl p-8 w-full max-w-[460px] relative shadow-2xl my-4"
+      >
+        <button
+          id="modalClose"
+          class="absolute top-5 right-5 bg-[#252836] border border-white/10 text-[#8a8fa8] w-8 h-8 rounded-full cursor-pointer flex items-center justify-center text-base hover:bg-[#e8232a] hover:text-white hover:border-[#e8232a] transition-all"
+        >
+          ✕
+        </button>
+        <div
+          class="font-bebas text-[1.8rem] tracking-widest text-[#f7f8fc] mb-1 flex items-center gap-2"
+        >
+          <span
+            style="
+              background: #e8232a;
+              width: 9px;
+              height: 9px;
+              border-radius: 50%;
+              display: inline-block;
+            "
+            class="logo-dot"
+          ></span
+          >RYANBET
+        </div>
+        <p id="modalSub" class="text-sm text-[#8a8fa8] mb-6">
+          Welcome back — your picks are waiting.
+        </p>
+
+        <!-- Tabs -->
+        <div
+          class="flex rounded-xl overflow-hidden border border-white/10 mb-7"
+        >
+          <button
+            id="tabLogin"
+            onclick="switchTab('login')"
+            class="modal-tab flex-1 py-[10px] text-center font-bold text-[0.9rem] cursor-pointer border-none transition-all"
+          >
+            Log In
+          </button>
+          <button
+            id="tabSignup"
+            onclick="switchTab('signup')"
+            class="modal-tab flex-1 py-[10px] text-center font-bold text-[0.9rem] cursor-pointer border-none transition-all"
+          >
+            Sign Up
+          </button>
+        </div>
+
+        <!-- Login Form -->
+        <div id="loginForm">
+          <div class="flex flex-col gap-2 mb-4">
+            <label class="text-xs font-bold text-[#8a8fa8] tracking-widest"
+              >EMAIL ADDRESS</label
+            >
+            <input
+              id="loginEmail"
+              type="email"
+              placeholder="you@example.com"
+              class="bg-[var(--input-bg,#252836)] border border-white/10 text-[#f7f8fc] text-[0.95rem] px-[14px] py-[11px] rounded-xl placeholder-[#5c6077] w-full transition-all"
+            />
+          </div>
+          <div class="flex flex-col gap-2 mb-4">
+            <label class="text-xs font-bold text-[#8a8fa8] tracking-widest"
+              >PASSWORD</label
+            >
+            <div class="relative">
+              <input
+                id="loginPass"
+                type="password"
+                placeholder="••••••••"
+                class="bg-[var(--input-bg,#252836)] border border-white/10 text-[#f7f8fc] text-[0.95rem] px-[14px] py-[11px] rounded-xl placeholder-[#5c6077] w-full transition-all"
+              />
+              <button
+                type="button"
+                onclick="togglePass('loginPass', this)"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-[#5c6077] hover:text-[#8a8fa8] text-xs transition-colors"
+              >
+                SHOW
+              </button>
+            </div>
+          </div>
+          <div
+            id="loginError"
+            class="hidden bg-[rgba(232,35,42,0.1)] border border-[rgba(232,35,42,0.3)] text-[#ff6b70] text-xs px-4 py-3 rounded-xl mb-4"
+          ></div>
+          <button
+            onclick="handleLogin()"
+            class="w-full bg-[#e8232a] text-white border-none font-bold text-base py-[13px] rounded-xl cursor-pointer mt-1 hover:bg-[#ff2e35] hover:shadow-lg transition-all tracking-wide"
+          >
+            Log In to VIP
+          </button>
+          <div class="text-center mt-5 text-xs text-[#8a8fa8]">
+            <a
+              href="#"
+              class="text-[#e8232a] font-bold no-underline hover:underline"
+              >Forgot your password?</a
+            >
+            &nbsp;·&nbsp; No account?
+            <a
+              href="#"
+              onclick="
+                switchTab('signup');
+                return false;
+              "
+              class="text-[#e8232a] font-bold no-underline hover:underline"
+              >Sign up free</a
+            >
+          </div>
+        </div>
+
+        <!-- Signup Form -->
+        <div id="signupForm" class="hidden">
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-bold text-[#8a8fa8] tracking-widest"
+                >FIRST NAME</label
+              >
+              <input
+                type="text"
+                id="signupFirstName"
+                placeholder="Ryan"
+                class="bg-[var(--input-bg,#252836)] border border-white/10 text-[#f7f8fc] text-[0.95rem] px-[14px] py-[11px] rounded-xl placeholder-[#5c6077] w-full transition-all"
+              />
+            </div>
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-bold text-[#8a8fa8] tracking-widest"
+                >LAST NAME</label
+              >
+              <input
+                type="text"
+                id="signupLastName"
+                placeholder="Smith"
+                class="bg-[var(--input-bg,#252836)] border border-white/10 text-[#f7f8fc] text-[0.95rem] px-[14px] py-[11px] rounded-xl placeholder-[#5c6077] w-full transition-all"
+              />
+            </div>
+          </div>
+          <div class="flex flex-col gap-2 mb-4">
+            <label class="text-xs font-bold text-[#8a8fa8] tracking-widest"
+              >EMAIL ADDRESS</label
+            >
+            <input
+              type="email"
+              id="signupEmail"
+              placeholder="you@example.com"
+              class="bg-[var(--input-bg,#252836)] border border-white/10 text-[#f7f8fc] text-[0.95rem] px-[14px] py-[11px] rounded-xl placeholder-[#5c6077] w-full transition-all"
+            />
+          </div>
+          <div class="flex flex-col gap-2 mb-4">
+            <label class="text-xs font-bold text-[#8a8fa8] tracking-widest"
+              >COUNTRY</label
+            >
+            <select
+              id="signupCountry"
+              class="bg-[var(--input-bg,#252836)] border border-white/10 text-[#f7f8fc] text-[0.95rem] px-[14px] py-[11px] rounded-xl w-full transition-all cursor-pointer"
+            >
+              <option value="" disabled selected>Select your country</option>
+              <option value="US" data-flag="🇺🇸">🇺🇸 United States</option>
+              <option value="CA" data-flag="🇨🇦">🇨🇦 Canada</option>
+              <option value="GB" data-flag="🇬🇧">🇬🇧 United Kingdom</option>
+              <option value="AU" data-flag="🇦🇺">🇦🇺 Australia</option>
+              <option value="NG" data-flag="🇳🇬">🇳🇬 Nigeria</option>
+              <option value="GH" data-flag="🇬🇭">🇬🇭 Ghana</option>
+              <option value="ZA" data-flag="🇿🇦">🇿🇦 South Africa</option>
+              <option value="KE" data-flag="🇰🇪">🇰🇪 Kenya</option>
+              <option value="DE" data-flag="🇩🇪">🇩🇪 Germany</option>
+              <option value="FR" data-flag="🇫🇷">🇫🇷 France</option>
+              <option value="ES" data-flag="🇪🇸">🇪🇸 Spain</option>
+              <option value="IT" data-flag="🇮🇹">🇮🇹 Italy</option>
+              <option value="BR" data-flag="🇧🇷">🇧🇷 Brazil</option>
+              <option value="MX" data-flag="🇲🇽">🇲🇽 Mexico</option>
+              <option value="IN" data-flag="🇮🇳">🇮🇳 India</option>
+              <option value="JP" data-flag="🇯🇵">🇯🇵 Japan</option>
+              <option value="NL" data-flag="🇳🇱">🇳🇱 Netherlands</option>
+              <option value="IE" data-flag="🇮🇪">🇮🇪 Ireland</option>
+              <option value="NZ" data-flag="🇳🇿">🇳🇿 New Zealand</option>
+              <option value="OTHER" data-flag="🌍">🌍 Other</option>
+            </select>
+          </div>
+          <div class="flex flex-col gap-2 mb-4">
+            <label class="text-xs font-bold text-[#8a8fa8] tracking-widest"
+              >PASSWORD</label
+            >
+            <div class="relative">
+              <input
+                type="password"
+                id="signupPass"
+                placeholder="Min. 8 characters"
+                class="bg-[var(--input-bg,#252836)] border border-white/10 text-[#f7f8fc] text-[0.95rem] px-[14px] py-[11px] rounded-xl placeholder-[#5c6077] w-full transition-all"
+              />
+              <button
+                type="button"
+                onclick="togglePass('signupPass', this)"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-[#5c6077] hover:text-[#8a8fa8] text-xs transition-colors"
+              >
+                SHOW
+              </button>
+            </div>
+            <div
+              id="passStrength"
+              class="h-1 rounded-full bg-[#252836] overflow-hidden mt-1"
+            >
+              <div
+                id="passBar"
+                class="h-full rounded-full transition-all duration-300"
+                style="width: 0%"
+              ></div>
+            </div>
+          </div>
+          <div class="flex flex-col gap-2 mb-4">
+            <label class="text-xs font-bold text-[#8a8fa8] tracking-widest"
+              >REFERRAL CODE
+              <span
+                class="text-[#5c6077] font-normal normal-case tracking-normal"
+                >(optional)</span
+              ></label
+            >
+            <input
+              type="text"
+              placeholder="e.g. RYAN2025"
+              class="bg-[var(--input-bg,#252836)] border border-white/10 text-[#f7f8fc] text-[0.95rem] px-[14px] py-[11px] rounded-xl placeholder-[#5c6077] w-full transition-all"
+            />
+          </div>
+          <div
+            id="signupError"
+            class="hidden bg-[rgba(232,35,42,0.1)] border border-[rgba(232,35,42,0.3)] text-[#ff6b70] text-xs px-4 py-3 rounded-xl mb-4"
+          ></div>
+          <button
+            onclick="handleSignup()"
+            class="w-full bg-[#e8232a] text-white border-none font-bold text-base py-[13px] rounded-xl cursor-pointer mt-1 hover:bg-[#ff2e35] hover:shadow-lg transition-all"
+          >
+            Create Account
+          </button>
+          <p class="text-xs text-[#5c6077] text-center mt-3 leading-relaxed">
+            By signing up you agree to our
+            <a href="#" class="text-[#e8232a]">Terms of Service</a> and confirm
+            you are 21+.
+          </p>
+          <div class="text-center mt-4 text-xs text-[#8a8fa8]">
+            Already have an account?
+            <a
+              href="#"
+              onclick="
+                switchTab('login');
+                return false;
+              "
+              class="text-[#e8232a] font-bold no-underline hover:underline"
+              >Log in</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== TICKER ===================== -->
+    <div class="bg-[#e8232a] overflow-hidden whitespace-nowrap py-2">
+      <div class="ticker-track inline-flex">
+        <span
+          class="mx-10 font-mono-ibm text-xs font-medium tracking-widest text-white/90"
+          >🏈 Chiefs <strong class="text-white">-4.5</strong> — WIN +1.0u
+          &nbsp;·&nbsp;</span
+        >
+        <span
+          class="mx-10 font-mono-ibm text-xs font-medium tracking-widest text-white/90"
+          >🏀 Celtics <strong class="text-white">-6.5</strong> — WIN +0.9u
+          &nbsp;·&nbsp;</span
+        >
+        <span
+          class="mx-10 font-mono-ibm text-xs font-medium tracking-widest text-white/90"
+          >⚾ Dodgers <strong class="text-white">ML -130</strong> — WIN +0.77u
+          &nbsp;·&nbsp;</span
+        >
+        <span
+          class="mx-10 font-mono-ibm text-xs font-medium tracking-widest text-white/90"
+          >🏒 Panthers <strong class="text-white">ML -105</strong> — WIN +0.95u
+          &nbsp;·&nbsp;</span
+        >
+        <span
+          class="mx-10 font-mono-ibm text-xs font-medium tracking-widest text-white/90"
+          >🏈 Eagles <strong class="text-white">+3</strong> — WIN +0.9u
+          &nbsp;·&nbsp;</span
+        >
+        <span
+          class="mx-10 font-mono-ibm text-xs font-medium tracking-widest text-white/90"
+          >⚾ Braves <strong class="text-white">-1.5 +105</strong> — WIN +1.05u
+          &nbsp;·&nbsp;</span
+        >
+        <span
+          class="mx-10 font-mono-ibm text-xs font-medium tracking-widest text-white/90"
+          >🏀 Lakers <strong class="text-white">+5.5</strong> — WIN +0.9u
+          &nbsp;·&nbsp;</span
+        >
+        <!-- duplicate -->
+        <span
+          class="mx-10 font-mono-ibm text-xs font-medium tracking-widest text-white/90"
+          >🏈 Chiefs <strong class="text-white">-4.5</strong> — WIN +1.0u
+          &nbsp;·&nbsp;</span
+        >
+        <span
+          class="mx-10 font-mono-ibm text-xs font-medium tracking-widest text-white/90"
+          >🏀 Celtics <strong class="text-white">-6.5</strong> — WIN +0.9u
+          &nbsp;·&nbsp;</span
+        >
+        <span
+          class="mx-10 font-mono-ibm text-xs font-medium tracking-widest text-white/90"
+          >⚾ Dodgers <strong class="text-white">ML -130</strong> — WIN +0.77u
+          &nbsp;·&nbsp;</span
+        >
+        <span
+          class="mx-10 font-mono-ibm text-xs font-medium tracking-widest text-white/90"
+          >🏒 Panthers <strong class="text-white">ML -105</strong> — WIN +0.95u
+          &nbsp;·&nbsp;</span
+        >
+        <span
+          class="mx-10 font-mono-ibm text-xs font-medium tracking-widest text-white/90"
+          >🏈 Eagles <strong class="text-white">+3</strong> — WIN +0.9u
+          &nbsp;·&nbsp;</span
+        >
+        <span
+          class="mx-10 font-mono-ibm text-xs font-medium tracking-widest text-white/90"
+          >⚾ Braves <strong class="text-white">-1.5 +105</strong> — WIN +1.05u
+          &nbsp;·&nbsp;</span
+        >
+        <span
+          class="mx-10 font-mono-ibm text-xs font-medium tracking-widest text-white/90"
+          >🏀 Lakers <strong class="text-white">+5.5</strong> — WIN +0.9u
+          &nbsp;·&nbsp;</span
+        >
+      </div>
+    </div>
+
+    <!-- ===================== HERO ===================== -->
+    <section
+      class="hero-bg relative min-h-[85vh] flex flex-col items-center justify-center text-center px-4 md:px-12 py-24"
+    >
+      <div class="hero-overlay absolute inset-0 pointer-events-none"></div>
+      <div class="relative z-10 flex flex-col items-center">
+        <div
+          class="inline-flex items-center gap-2 bg-[rgba(232,35,42,0.1)] border border-[rgba(232,35,42,0.3)] text-[#ff6b70] font-mono-ibm text-[0.72rem] tracking-[0.1em] px-4 py-[7px] rounded-full mb-8"
+        >
+          <span
+            style="
+              background: #e8232a;
+              width: 9px;
+              height: 9px;
+              border-radius: 50%;
+              display: inline-block;
+            "
+            class="logo-dot"
+          ></span>
+          VIP PICKS COMMUNITY · MEMBERS ONLY CHAT
+        </div>
+        <h1
+          class="font-bebas text-[clamp(3.2rem,9vw,7.5rem)] tracking-wide leading-[0.95] mb-6 max-w-4xl drop-shadow-2xl"
+        >
+          WHERE <span class="text-[#e8232a]">SHARP BETTORS</span><br />GET THEIR
+          EDGE
+        </h1>
+        <p
+          class="text-[#d0d3df] text-[clamp(1rem,2vw,1.15rem)] max-w-xl mx-auto mb-10 leading-[1.7] drop-shadow"
+        >
+          Subscribe to RyanBet's private VIP channel and receive researched,
+          high-value sports picks daily — NFL, NBA, MLB, NHL, and NCAA. Real
+          analysis. Real results. Real community.
+        </p>
+        <div class="flex flex-wrap gap-4 justify-center">
+          <button
+            onclick="openModal('signup')"
+            class="bg-[#e8232a] text-white font-bold text-base px-8 py-[14px] rounded-xl border-none cursor-pointer hover:bg-[#ff2e35] hover:-translate-y-0.5 hover:shadow-xl transition-all tracking-wide"
+          >
+            Join VIP Now
+          </button>
+          <a
+            href="#testimonials"
+            class="border border-white/20 text-[#f7f8fc] font-bold text-base px-8 py-[13px] rounded-xl no-underline hover:border-white/30 hover:bg-white/5 transition-all"
+            >See Member Results →</a
+          >
+        </div>
+        <p class="mt-5 text-xs text-[#5c6077]">
+          Cancel anytime · No hidden fees
+        </p>
+      </div>
+    </section>
+
+    <!-- ===================== STATS ROW ===================== -->
+    <div
+      class="lazy-section grid grid-cols-2 md:grid-cols-5 border-t border-b border-white/7 divide-x divide-white/7"
+    >
+      <div class="bg-[#1a1d28] py-8 px-6 text-center">
+        <div class="font-bebas text-[2.8rem] tracking-wide leading-none">
+          90<span class="text-[1.8rem] text-[#e8232a]">%</span>
+        </div>
+        <div
+          class="font-mono-ibm text-[0.68rem] tracking-widest text-[#5c6077] uppercase mt-1.5"
+        >
+          Win Rate (ATS)
+        </div>
+      </div>
+      <div class="bg-[#1a1d28] py-8 px-6 text-center">
+        <div
+          class="font-bebas text-[2.8rem] tracking-wide leading-none text-[#e8232a]"
+        >
+          85–9–4
+        </div>
+        <div
+          class="font-mono-ibm text-[0.68rem] tracking-widest text-[#5c6077] uppercase mt-1.5"
+        >
+          Season Record
+        </div>
+      </div>
+      <div class="bg-[#1a1d28] py-8 px-6 text-center">
+        <div
+          class="font-bebas text-[2.8rem] tracking-wide leading-none text-[#2ecc8a]"
+        >
+          +41.7u
+        </div>
+        <div
+          class="font-mono-ibm text-[0.68rem] tracking-widest text-[#5c6077] uppercase mt-1.5"
+        >
+          Units Profit
+        </div>
+      </div>
+      <div class="bg-[#1a1d28] py-8 px-6 text-center">
+        <div class="font-bebas text-[2.8rem] tracking-wide leading-none">
+          2,400+
+        </div>
+        <div
+          class="font-mono-ibm text-[0.68rem] tracking-widest text-[#5c6077] uppercase mt-1.5"
+        >
+          Active Members
+        </div>
+      </div>
+      <div class="bg-[#1a1d28] py-8 px-6 text-center col-span-2 md:col-span-1">
+        <div class="font-bebas text-[2.8rem] tracking-wide leading-none">5</div>
+        <div
+          class="font-mono-ibm text-[0.68rem] tracking-widest text-[#5c6077] uppercase mt-1.5"
+        >
+          Sports Covered
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== HOW IT WORKS ===================== -->
+    <section
+      id="how"
+      class="lazy-section max-w-6xl mx-auto px-4 md:px-12 py-20"
+    >
+      <p
+        class="font-mono-ibm text-[0.7rem] tracking-[0.12em] text-[#e8232a] uppercase mb-3"
+      >
+        Process
+      </p>
+      <h2
+        class="font-bebas text-[clamp(2.2rem,5vw,3.8rem)] tracking-wide leading-none mb-4"
+      >
+        How RyanBet Works
+      </h2>
+      <p class="text-[#8a8fa8] text-[1.05rem] max-w-xl leading-[1.75]">
+        When you join, you get instant access to our private VIP chat where our
+        analysts post picks before every game — with full breakdowns, line
+        values, and unit sizing.
+      </p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+        <div
+          class="bg-[#1a1d28] border border-white/7 rounded-2xl p-8 hover:border-[rgba(232,35,42,0.3)] hover:-translate-y-1 transition-all cursor-default"
+        >
+          <div
+            class="font-bebas text-[4rem] text-[rgba(232,35,42,0.1)] leading-none mb-4"
+          >
+            01
+          </div>
+          <h3 class="font-bold text-[1.05rem] mb-2">Subscribe & Get Access</h3>
+          <p class="text-sm text-[#8a8fa8] leading-[1.7]">
+            Choose your plan, register, and receive your invite link to our
+            exclusive VIP members-only chat within minutes.
+          </p>
+        </div>
+        <div
+          class="bg-[#1a1d28] border border-white/7 rounded-2xl p-8 hover:border-[rgba(232,35,42,0.3)] hover:-translate-y-1 transition-all cursor-default"
+        >
+          <div
+            class="font-bebas text-[4rem] text-[rgba(232,35,42,0.1)] leading-none mb-4"
+          >
+            02
+          </div>
+          <h3 class="font-bold text-[1.05rem] mb-2">Picks Posted Daily</h3>
+          <p class="text-sm text-[#8a8fa8] leading-[1.7]">
+            Our analysts post curated picks every morning and afternoon —
+            including the pick, line, unit size, and the reasoning behind every
+            call.
+          </p>
+        </div>
+        <div
+          class="bg-[#1a1d28] border border-white/7 rounded-2xl p-8 hover:border-[rgba(232,35,42,0.3)] hover:-translate-y-1 transition-all cursor-default"
+        >
+          <div
+            class="font-bebas text-[4rem] text-[rgba(232,35,42,0.1)] leading-none mb-4"
+          >
+            03
+          </div>
+          <h3 class="font-bold text-[1.05rem] mb-2">Follow Along</h3>
+          <p class="text-sm text-[#8a8fa8] leading-[1.7]">
+            Place your bets at any sportsbook you prefer. Members report their
+            results in the chat and our analysts track every pick publicly.
+          </p>
+        </div>
+        <div
+          class="bg-[#1a1d28] border border-white/7 rounded-2xl p-8 hover:border-[rgba(232,35,42,0.3)] hover:-translate-y-1 transition-all cursor-default"
+        >
+          <div
+            class="font-bebas text-[4rem] text-[rgba(232,35,42,0.1)] leading-none mb-4"
+          >
+            04
+          </div>
+          <h3 class="font-bold text-[1.05rem] mb-2">Transparent Record</h3>
+          <p class="text-sm text-[#8a8fa8] leading-[1.7]">
+            Every pick — win, loss, or push — is logged permanently in the
+            channel. No cherry-picking, no revisionism. Full accountability.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="border-white/7 max-w-6xl mx-auto" />
+
+    <!-- ===================== SPORTS (with filter) ===================== -->
+    <div id="picks" class="bg-[#111318] py-20 w-full">
+      <div class="lazy-section max-w-6xl mx-auto px-4 md:px-12">
+        <p
+          class="font-mono-ibm text-[0.7rem] tracking-[0.12em] text-[#e8232a] uppercase mb-3"
+        >
+          Coverage
+        </p>
+        <h2
+          class="font-bebas text-[clamp(2.2rem,5vw,3.8rem)] tracking-wide leading-none mb-4"
+        >
+          Sports We Cover
+        </h2>
+        <p class="text-[#8a8fa8] text-[1.05rem] max-w-xl leading-[1.75] mb-6">
+          Click any sport below to filter the latest news and picks for that
+          league.
+        </p>
+        <div class="grid grid-cols-3 sm:grid-cols-6 gap-4">
+          <div
+            data-sport="ALL"
+            class="sport-pill active bg-[#252836] border border-white/7 rounded-xl py-5 px-4 text-center font-bold text-[0.9rem] tracking-wide transition-all"
+          >
+            <span class="text-[1.6rem] block mb-1.5">⚡</span>ALL
+          </div>
+          <div
+            data-sport="NFL"
+            class="sport-pill bg-[#252836] border border-white/7 rounded-xl py-5 px-4 text-center font-bold text-[0.9rem] tracking-wide transition-all"
+          >
+            <span class="text-[1.6rem] block mb-1.5">🏈</span>NFL
+          </div>
+          <div
+            data-sport="NBA"
+            class="sport-pill bg-[#252836] border border-white/7 rounded-xl py-5 px-4 text-center font-bold text-[0.9rem] tracking-wide transition-all"
+          >
+            <span class="text-[1.6rem] block mb-1.5">🏀</span>NBA
+          </div>
+          <div
+            data-sport="MLB"
+            class="sport-pill bg-[#252836] border border-white/7 rounded-xl py-5 px-4 text-center font-bold text-[0.9rem] tracking-wide transition-all"
+          >
+            <span class="text-[1.6rem] block mb-1.5">⚾</span>MLB
+          </div>
+          <div
+            data-sport="NHL"
+            class="sport-pill bg-[#252836] border border-white/7 rounded-xl py-5 px-4 text-center font-bold text-[0.9rem] tracking-wide transition-all"
+          >
+            <span class="text-[1.6rem] block mb-1.5">🏒</span>NHL
+          </div>
+          <div
+            data-sport="NCAA"
+            class="sport-pill bg-[#252836] border border-white/7 rounded-xl py-5 px-4 text-center font-bold text-[0.9rem] tracking-wide transition-all"
+          >
+            <span class="text-[1.6rem] block mb-1.5">🎓</span>NCAA
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== SPORTS NEWS (filterable) ===================== -->
+    <section
+      id="news"
+      class="lazy-section max-w-6xl mx-auto px-4 md:px-12 py-20"
+    >
+      <div class="flex flex-wrap items-end justify-between gap-4 mb-10">
+        <div>
+          <p
+            class="font-mono-ibm text-[0.7rem] tracking-[0.12em] text-[#e8232a] uppercase mb-3"
+          >
+            Headlines
+          </p>
+          <h2
+            class="font-bebas text-[clamp(2.2rem,5vw,3.8rem)] tracking-wide leading-none mb-2"
+          >
+            Sports News
+            <span id="activeSportLabel" class="text-[#e8232a]"></span>
+          </h2>
+          <p class="text-[#8a8fa8] text-[1.05rem] max-w-xl leading-[1.75]">
+            The injuries, line moves, and storylines our analysts are watching
+            before they shape tonight's picks.
+          </p>
+        </div>
+        <span
+          class="font-mono-ibm text-[0.68rem] tracking-widest text-[#5c6077] uppercase whitespace-nowrap"
+          id="newsUpdated"
+          >Updated just now</span
+        >
+      </div>
+
+      <div id="noNewsMsg" class="hidden text-center py-16 text-[#5c6077]">
+        <div class="text-4xl mb-3">📭</div>
+        <p class="font-bold text-base">
+          No news found for this sport right now.
+        </p>
+        <p class="text-sm mt-1">
+          Check back soon — our analysts update picks throughout the day.
+        </p>
+      </div>
+
+      <div
+        id="newsGrid"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+      >
+        <article
+          class="news-card bg-[#1a1d28] border border-white/7 rounded-2xl p-6 flex flex-col gap-3"
+          data-sport="NFL"
+        >
+          <div class="flex items-center justify-between">
+            <span
+              class="font-mono-ibm text-[0.65rem] tracking-widest text-[#e8232a] uppercase"
+              >🏈 NFL</span
+            >
+            <span class="text-xs text-[#5c6077]">2h ago</span>
+          </div>
+          <h3 class="font-bold text-[1.02rem] leading-snug">
+            Starting QB listed questionable for Sunday's divisional matchup
+          </h3>
+          <p class="text-sm text-[#8a8fa8] leading-[1.65]">
+            A late-week limited practice has the line moving — our analysts are
+            watching closely before tonight's card goes out.
+          </p>
+        </article>
+        <article
+          class="news-card bg-[#1a1d28] border border-white/7 rounded-2xl p-6 flex flex-col gap-3"
+          data-sport="NFL"
+        >
+          <div class="flex items-center justify-between">
+            <span
+              class="font-mono-ibm text-[0.65rem] tracking-widest text-[#e8232a] uppercase"
+              >🏈 NFL</span
+            >
+            <span class="text-xs text-[#5c6077]">3h ago</span>
+          </div>
+          <h3 class="font-bold text-[1.02rem] leading-snug">
+            Home underdogs covering at record pace in Week 14 — here's why
+          </h3>
+          <p class="text-sm text-[#8a8fa8] leading-[1.65]">
+            Public money keeps hammering favorites, but sharp accounts have been
+            riding the other side all season long.
+          </p>
+        </article>
+        <article
+          class="news-card bg-[#1a1d28] border border-white/7 rounded-2xl p-6 flex flex-col gap-3"
+          data-sport="NBA"
+        >
+          <div class="flex items-center justify-between">
+            <span
+              class="font-mono-ibm text-[0.65rem] tracking-widest text-[#e8232a] uppercase"
+              >🏀 NBA</span
+            >
+            <span class="text-xs text-[#5c6077]">4h ago</span>
+          </div>
+          <h3 class="font-bold text-[1.02rem] leading-snug">
+            Back-to-back schedule spot raises rest-night questions for two
+            contenders
+          </h3>
+          <p class="text-sm text-[#8a8fa8] leading-[1.65]">
+            Travel and fatigue factor heavily into tonight's totals — a key
+            angle in how we're sizing units.
+          </p>
+        </article>
+        <article
+          class="news-card bg-[#1a1d28] border border-white/7 rounded-2xl p-6 flex flex-col gap-3"
+          data-sport="NBA"
+        >
+          <div class="flex items-center justify-between">
+            <span
+              class="font-mono-ibm text-[0.65rem] tracking-widest text-[#e8232a] uppercase"
+              >🏀 NBA</span
+            >
+            <span class="text-xs text-[#5c6077]">5h ago</span>
+          </div>
+          <h3 class="font-bold text-[1.02rem] leading-snug">
+            Superstar logs limited minutes in shootaround — listed day-to-day
+          </h3>
+          <p class="text-sm text-[#8a8fa8] leading-[1.65]">
+            If he's out, the total drops fast. We're holding off posting until
+            tip-off injury report drops tonight.
+          </p>
+        </article>
+        <article
+          class="news-card bg-[#1a1d28] border border-white/7 rounded-2xl p-6 flex flex-col gap-3"
+          data-sport="MLB"
+        >
+          <div class="flex items-center justify-between">
+            <span
+              class="font-mono-ibm text-[0.65rem] tracking-widest text-[#e8232a] uppercase"
+              >⚾ MLB</span
+            >
+            <span class="text-xs text-[#5c6077]">6h ago</span>
+          </div>
+          <h3 class="font-bold text-[1.02rem] leading-snug">
+            Bullpen usage piling up ahead of a pivotal weekend series
+          </h3>
+          <p class="text-sm text-[#8a8fa8] leading-[1.65]">
+            Heavy recent innings out of the pen could open value on the run line
+            — full breakdown drops in VIP chat.
+          </p>
+        </article>
+        <article
+          class="news-card bg-[#1a1d28] border border-white/7 rounded-2xl p-6 flex flex-col gap-3"
+          data-sport="MLB"
+        >
+          <div class="flex items-center justify-between">
+            <span
+              class="font-mono-ibm text-[0.65rem] tracking-widest text-[#e8232a] uppercase"
+              >⚾ MLB</span
+            >
+            <span class="text-xs text-[#5c6077]">7h ago</span>
+          </div>
+          <h3 class="font-bold text-[1.02rem] leading-snug">
+            Ace set to return from IL — starting rotation locks in for playoff
+            push
+          </h3>
+          <p class="text-sm text-[#8a8fa8] leading-[1.65]">
+            Line has already moved 15 cents on the moneyline. We got ahead of it
+            — members were notified at open.
+          </p>
+        </article>
+        <article
+          class="news-card bg-[#1a1d28] border border-white/7 rounded-2xl p-6 flex flex-col gap-3"
+          data-sport="NHL"
+        >
+          <div class="flex items-center justify-between">
+            <span
+              class="font-mono-ibm text-[0.65rem] tracking-widest text-[#e8232a] uppercase"
+              >🏒 NHL</span
+            >
+            <span class="text-xs text-[#5c6077]">9h ago</span>
+          </div>
+          <h3 class="font-bold text-[1.02rem] leading-snug">
+            Backup goaltender expected to start, shifting market confidence
+          </h3>
+          <p class="text-sm text-[#8a8fa8] leading-[1.65]">
+            Puck-line pricing has already started to react — we're tracking it
+            into tonight's lock.
+          </p>
+        </article>
+        <article
+          class="news-card bg-[#1a1d28] border border-white/7 rounded-2xl p-6 flex flex-col gap-3"
+          data-sport="NHL"
+        >
+          <div class="flex items-center justify-between">
+            <span
+              class="font-mono-ibm text-[0.65rem] tracking-widest text-[#e8232a] uppercase"
+              >🏒 NHL</span
+            >
+            <span class="text-xs text-[#5c6077]">10h ago</span>
+          </div>
+          <h3 class="font-bold text-[1.02rem] leading-snug">
+            Division leaders on a 7-game home stand — fatigue setting in or
+            fortress effect?
+          </h3>
+          <p class="text-sm text-[#8a8fa8] leading-[1.65]">
+            Public perception and rest data are pointing in opposite directions.
+            Our model breaks the tie in VIP tonight.
+          </p>
+        </article>
+        <article
+          class="news-card bg-[#1a1d28] border border-white/7 rounded-2xl p-6 flex flex-col gap-3"
+          data-sport="NCAA"
+        >
+          <div class="flex items-center justify-between">
+            <span
+              class="font-mono-ibm text-[0.65rem] tracking-widest text-[#e8232a] uppercase"
+              >🎓 NCAA</span
+            >
+            <span class="text-xs text-[#5c6077]">11h ago</span>
+          </div>
+          <h3 class="font-bold text-[1.02rem] leading-snug">
+            Conference standings tighten with three games separating the top
+            four
+          </h3>
+          <p class="text-sm text-[#8a8fa8] leading-[1.65]">
+            Motivation spots like this are where we've found our best spread
+            value all season.
+          </p>
+        </article>
+        <article
+          class="news-card bg-[#1a1d28] border border-white/7 rounded-2xl p-6 flex flex-col gap-3"
+          data-sport="NCAA"
+        >
+          <div class="flex items-center justify-between">
+            <span
+              class="font-mono-ibm text-[0.65rem] tracking-widest text-[#e8232a] uppercase"
+              >🎓 NCAA</span
+            >
+            <span class="text-xs text-[#5c6077]">13h ago</span>
+          </div>
+          <h3 class="font-bold text-[1.02rem] leading-snug">
+            Key transfer portal addition debuts Saturday in rivalry game
+          </h3>
+          <p class="text-sm text-[#8a8fa8] leading-[1.65]">
+            Books haven't fully priced in the upgrade yet — one of our favorite
+            line-shopping spots of the season.
+          </p>
+        </article>
+      </div>
+      <p class="text-xs text-[#5c6077] mt-6">
+        Headlines summarized by our team for context only and are not betting
+        advice on their own — full picks and reasoning are posted in VIP chat.
+      </p>
+    </section>
+
+    <hr class="border-white/7 max-w-6xl mx-auto" />
+
+    <!-- ===================== SPORTSBOOKS ===================== -->
+    <div id="books" class="bg-[#1a1d28] py-20 w-full">
+      <div class="lazy-section max-w-6xl mx-auto px-4 md:px-12">
+        <p
+          class="font-mono-ibm text-[0.7rem] tracking-[0.12em] text-[#e8232a] uppercase mb-3"
+        >
+          Platform Results
+        </p>
+        <h2
+          class="font-bebas text-[clamp(2.2rem,5vw,3.8rem)] tracking-wide leading-none mb-4"
+        >
+          Success Rate by Sportsbook
+        </h2>
+        <p class="text-[#8a8fa8] text-[1.05rem] max-w-xl leading-[1.75]">
+          Our members bet across all major platforms. Here's how our picks have
+          performed on each — tracked across 103 documented picks this season.
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-10">
+          <div
+            class="bg-[#252836] border border-white/7 rounded-2xl p-6 flex flex-col gap-3 hover:border-[rgba(232,35,42,0.35)] hover:-translate-y-0.5 transition-all"
+          >
+            <div class="flex items-center justify-between">
+              <span class="font-extrabold text-base">FanDuel</span
+              ><span class="text-xl">🟢</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="font-bebas text-[2rem] text-[#2ecc8a]">91.3%</span
+              ><span class="font-mono-ibm text-[0.68rem] text-[#5c6077]"
+                >52W–5L–2P</span
+              >
+            </div>
+            <div class="bg-[#1a1d28] rounded-full h-2 overflow-hidden">
+              <div
+                class="book-bar h-full rounded-full bg-gradient-to-r from-[#e8232a] to-[#ff6b70]"
+                style="width: 91.3%"
+              ></div>
+            </div>
+            <span class="text-xs text-[#8a8fa8]"
+              >Best performing platform this season</span
+            >
+          </div>
+          <div
+            class="bg-[#252836] border border-white/7 rounded-2xl p-6 flex flex-col gap-3 hover:border-[rgba(232,35,42,0.35)] hover:-translate-y-0.5 transition-all"
+          >
+            <div class="flex items-center justify-between">
+              <span class="font-extrabold text-base">DraftKings</span
+              ><span class="text-xl">🟢</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="font-bebas text-[2rem] text-[#2ecc8a]">90.1%</span
+              ><span class="font-mono-ibm text-[0.68rem] text-[#5c6077]"
+                >51W–6L–2P</span
+              >
+            </div>
+            <div class="bg-[#1a1d28] rounded-full h-2 overflow-hidden">
+              <div
+                class="book-bar h-full rounded-full bg-gradient-to-r from-[#e8232a] to-[#ff6b70]"
+                style="width: 90.1%"
+              ></div>
+            </div>
+            <span class="text-xs text-[#8a8fa8]"
+              >Consistently strong across all sports</span
+            >
+          </div>
+          <div
+            class="bg-[#252836] border border-white/7 rounded-2xl p-6 flex flex-col gap-3 hover:border-[rgba(232,35,42,0.35)] hover:-translate-y-0.5 transition-all"
+          >
+            <div class="flex items-center justify-between">
+              <span class="font-extrabold text-base">BetMGM</span
+              ><span class="text-xl">🟡</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="font-bebas text-[2rem] text-[#2ecc8a]">89.5%</span
+              ><span class="font-mono-ibm text-[0.68rem] text-[#5c6077]"
+                >51W–6L–2P</span
+              >
+            </div>
+            <div class="bg-[#1a1d28] rounded-full h-2 overflow-hidden">
+              <div
+                class="book-bar h-full rounded-full bg-gradient-to-r from-[#e8232a] to-[#ff6b70]"
+                style="width: 89.5%"
+              ></div>
+            </div>
+            <span class="text-xs text-[#8a8fa8]"
+              >Strong on NFL & NBA picks</span
+            >
+          </div>
+          <div
+            class="bg-[#252836] border border-white/7 rounded-2xl p-6 flex flex-col gap-3 hover:border-[rgba(232,35,42,0.35)] hover:-translate-y-0.5 transition-all"
+          >
+            <div class="flex items-center justify-between">
+              <span class="font-extrabold text-base">Bet365</span
+              ><span class="text-xl">🟡</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="font-bebas text-[2rem] text-[#2ecc8a]">88.7%</span
+              ><span class="font-mono-ibm text-[0.68rem] text-[#5c6077]"
+                >50W–6L–3P</span
+              >
+            </div>
+            <div class="bg-[#1a1d28] rounded-full h-2 overflow-hidden">
+              <div
+                class="book-bar h-full rounded-full bg-gradient-to-r from-[#e8232a] to-[#ff6b70]"
+                style="width: 88.7%"
+              ></div>
+            </div>
+            <span class="text-xs text-[#8a8fa8]"
+              >Excellent for international lines</span
+            >
+          </div>
+          <div
+            class="bg-[#252836] border border-white/7 rounded-2xl p-6 flex flex-col gap-3 hover:border-[rgba(232,35,42,0.35)] hover:-translate-y-0.5 transition-all"
+          >
+            <div class="flex items-center justify-between">
+              <span class="font-extrabold text-base">PrizePicks</span
+              ><span class="text-xl">🟢</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="font-bebas text-[2rem] text-[#2ecc8a]">90.8%</span
+              ><span class="font-mono-ibm text-[0.68rem] text-[#5c6077]"
+                >Props focused</span
+              >
+            </div>
+            <div class="bg-[#1a1d28] rounded-full h-2 overflow-hidden">
+              <div
+                class="book-bar h-full rounded-full bg-gradient-to-r from-[#e8232a] to-[#ff6b70]"
+                style="width: 90.8%"
+              ></div>
+            </div>
+            <span class="text-xs text-[#8a8fa8]"
+              >Top pick for player prop bettors</span
+            >
+          </div>
+          <div
+            class="bg-[#252836] border border-white/7 rounded-2xl p-6 flex flex-col gap-3 hover:border-[rgba(232,35,42,0.35)] hover:-translate-y-0.5 transition-all"
+          >
+            <div class="flex items-center justify-between">
+              <span class="font-extrabold text-base">Underdog</span
+              ><span class="text-xl">🟡</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="font-bebas text-[2rem] text-[#2ecc8a]">87.9%</span
+              ><span class="font-mono-ibm text-[0.68rem] text-[#5c6077]"
+                >Fantasy picks</span
+              >
+            </div>
+            <div class="bg-[#1a1d28] rounded-full h-2 overflow-hidden">
+              <div
+                class="book-bar h-full rounded-full bg-gradient-to-r from-[#e8232a] to-[#ff6b70]"
+                style="width: 87.9%"
+              ></div>
+            </div>
+            <span class="text-xs text-[#8a8fa8]"
+              >Great for daily fantasy lineups</span
+            >
+          </div>
+          <div
+            class="bg-[#252836] border border-white/7 rounded-2xl p-6 flex flex-col gap-3 hover:border-[rgba(232,35,42,0.35)] hover:-translate-y-0.5 transition-all"
+          >
+            <div class="flex items-center justify-between">
+              <span class="font-extrabold text-base">Caesars</span
+              ><span class="text-xl">🟡</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="font-bebas text-[2rem] text-[#2ecc8a]">89.1%</span
+              ><span class="font-mono-ibm text-[0.68rem] text-[#5c6077]"
+                >50W–6L–3P</span
+              >
+            </div>
+            <div class="bg-[#1a1d28] rounded-full h-2 overflow-hidden">
+              <div
+                class="book-bar h-full rounded-full bg-gradient-to-r from-[#e8232a] to-[#ff6b70]"
+                style="width: 89.1%"
+              ></div>
+            </div>
+            <span class="text-xs text-[#8a8fa8]"
+              >Best promos for ATS bettors</span
+            >
+          </div>
+          <div
+            class="bg-[#252836] border border-white/7 rounded-2xl p-6 flex flex-col gap-3 hover:border-[rgba(232,35,42,0.35)] hover:-translate-y-0.5 transition-all"
+          >
+            <div class="flex items-center justify-between">
+              <span class="font-extrabold text-base">Others</span
+              ><span class="text-xl">⚪</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="font-bebas text-[2rem] text-[#2ecc8a]">86.4%</span
+              ><span class="font-mono-ibm text-[0.68rem] text-[#5c6077]"
+                >PointsBet, SI, etc.</span
+              >
+            </div>
+            <div class="bg-[#1a1d28] rounded-full h-2 overflow-hidden">
+              <div
+                class="book-bar h-full rounded-full bg-gradient-to-r from-[#e8232a] to-[#ff6b70]"
+                style="width: 86.4%"
+              ></div>
+            </div>
+            <span class="text-xs text-[#8a8fa8]"
+              >Average across remaining books</span
+            >
+          </div>
+        </div>
+        <p class="text-xs text-[#5c6077] mt-6">
+          * Win rates calculated from VIP channel picks with timestamps before
+          game time. Past performance is not a guarantee of future results.
+        </p>
+      </div>
+    </div>
+
+    <!-- ===================== TESTIMONIALS ===================== -->
+    <section
+      id="testimonials"
+      class="lazy-section max-w-6xl mx-auto px-4 md:px-12 py-20"
+    >
+      <p
+        class="font-mono-ibm text-[0.7rem] tracking-[0.12em] text-[#e8232a] uppercase mb-3"
+      >
+        Member Wins
+      </p>
+      <h2
+        class="font-bebas text-[clamp(2.2rem,5vw,3.8rem)] tracking-wide leading-none mb-4"
+      >
+        What Our Members Say
+      </h2>
+      <p class="text-[#8a8fa8] text-[1.05rem] max-w-xl leading-[1.75]">
+        Real feedback from VIP subscribers across monthly, quarterly, and
+        lifetime plans.
+      </p>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
+        <div
+          class="bg-[#1a1d28] border border-white/7 rounded-2xl p-7 relative overflow-hidden"
+        >
+          <span
+            class="font-bebas text-[5rem] text-[#e8232a] opacity-30 absolute top-3 right-5 leading-[0.6]"
+            >"</span
+          >
+          <div class="text-[#f4c430] mb-3 tracking-wide">★★★★★</div>
+          <p class="text-sm text-[#8a8fa8] leading-[1.75] mb-5">
+            Been following RyanBet for 4 months now. The picks come with actual
+            reasoning — not just a team name. I've gone from break-even to
+            comfortably profitable. The community chat alone is worth the price.
+          </p>
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-to-br from-[#e8232a] to-[#8b0000] flex items-center justify-center font-extrabold text-[0.9rem] text-white flex-shrink-0"
+            >
+              MJ
+            </div>
+            <div>
+              <div class="font-bold text-[0.9rem]">Marcus J.</div>
+              <div class="text-xs text-[#5c6077]">Houston, TX</div>
+            </div>
+            <span
+              class="ml-auto font-mono-ibm text-[0.65rem] tracking-widest bg-[rgba(232,35,42,0.1)] border border-[rgba(232,35,42,0.25)] text-[#ff6b70] px-2 py-0.5 rounded-full whitespace-nowrap"
+              >MONTHLY</span
+            >
+          </div>
+        </div>
+        <div
+          class="bg-[#1a1d28] border border-white/7 rounded-2xl p-7 relative overflow-hidden"
+        >
+          <span
+            class="font-bebas text-[5rem] text-[#e8232a] opacity-30 absolute top-3 right-5 leading-[0.6]"
+            >"</span
+          >
+          <div class="text-[#f4c430] mb-3 tracking-wide">★★★★★</div>
+          <p class="text-sm text-[#8a8fa8] leading-[1.75] mb-5">
+            Upgraded to lifetime after my first month — paid for itself within 6
+            weeks. The MLB picks especially have been insane this season. Hit 8
+            of my last 10. These guys are the real deal.
+          </p>
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-to-br from-[#e8232a] to-[#8b0000] flex items-center justify-center font-extrabold text-[0.9rem] text-white flex-shrink-0"
+            >
+              DW
+            </div>
+            <div>
+              <div class="font-bold text-[0.9rem]">DeShawn W.</div>
+              <div class="text-xs text-[#5c6077]">Atlanta, GA</div>
+            </div>
+            <span
+              class="ml-auto font-mono-ibm text-[0.65rem] tracking-widests bg-[rgba(232,35,42,0.1)] border border-[rgba(232,35,42,0.25)] text-[#ff6b70] px-2 py-0.5 rounded-full whitespace-nowrap"
+              >LIFETIME</span
+            >
+          </div>
+        </div>
+        <div
+          class="bg-[#1a1d28] border border-white/7 rounded-2xl p-7 relative overflow-hidden"
+        >
+          <span
+            class="font-bebas text-[5rem] text-[#e8232a] opacity-30 absolute top-3 right-5 leading-[0.6]"
+            >"</span
+          >
+          <div class="text-[#f4c430] mb-3 tracking-wide">★★★★★</div>
+          <p class="text-sm text-[#8a8fa8] leading-[1.75] mb-5">
+            RyanBet is the only service that shows you every loss too — the
+            transparency built real trust. Cashed out $3,800 last month
+            following their NBA picks alone.
+          </p>
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-to-br from-[#e8232a] to-[#8b0000] flex items-center justify-center font-extrabold text-[0.9rem] text-white flex-shrink-0"
+            >
+              KL
+            </div>
+            <div>
+              <div class="font-bold text-[0.9rem]">Kevin L.</div>
+              <div class="text-xs text-[#5c6077]">Chicago, IL</div>
+            </div>
+            <span
+              class="ml-auto font-mono-ibm text-[0.65rem] tracking-widest bg-[rgba(232,35,42,0.1)] border border-[rgba(232,35,42,0.25)] text-[#ff6b70] px-2 py-0.5 rounded-full whitespace-nowrap"
+              >YEARLY</span
+            >
+          </div>
+        </div>
+        <div
+          class="bg-[#1a1d28] border border-white/7 rounded-2xl p-7 relative overflow-hidden"
+        >
+          <span
+            class="font-bebas text-[5rem] text-[#e8232a] opacity-30 absolute top-3 right-5 leading-[0.6]"
+            >"</span
+          >
+          <div class="text-[#f4c430] mb-3 tracking-wide">★★★★★</div>
+          <p class="text-sm text-[#8a8fa8] leading-[1.75] mb-5">
+            The VIP chat is active, the picks are sharp, and the analysts
+            actually explain their thinking. I've learned so much about line
+            value and bankroll management just from being in the community.
+          </p>
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-to-br from-[#e8232a] to-[#8b0000] flex items-center justify-center font-extrabold text-[0.9rem] text-white flex-shrink-0"
+            >
+              SR
+            </div>
+            <div>
+              <div class="font-bold text-[0.9rem]">Sofia R.</div>
+              <div class="text-xs text-[#5c6077]">Miami, FL</div>
+            </div>
+            <span
+              class="ml-auto font-mono-ibm text-[0.65rem] tracking-widest bg-[rgba(232,35,42,0.1)] border border-[rgba(232,35,42,0.25)] text-[#ff6b70] px-2 py-0.5 rounded-full whitespace-nowrap"
+              >MONTHLY</span
+            >
+          </div>
+        </div>
+        <div
+          class="bg-[#1a1d28] border border-white/7 rounded-2xl p-7 relative overflow-hidden"
+        >
+          <span
+            class="font-bebas text-[5rem] text-[#e8232a] opacity-30 absolute top-3 right-5 leading-[0.6]"
+            >"</span
+          >
+          <div class="text-[#f4c430] mb-3 tracking-wide">★★★★☆</div>
+          <p class="text-sm text-[#8a8fa8] leading-[1.75] mb-5">
+            Solid service, been a member 7 months. Had a rough stretch in March
+            but the team was honest about it and bounced back strong. Respect
+            the transparency. Up about 22 units overall.
+          </p>
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-to-br from-[#e8232a] to-[#8b0000] flex items-center justify-center font-extrabold text-[0.9rem] text-white flex-shrink-0"
+            >
+              TR
+            </div>
+            <div>
+              <div class="font-bold text-[0.9rem]">Tyler R.</div>
+              <div class="text-xs text-[#5c6077]">Phoenix, AZ</div>
+            </div>
+            <span
+              class="ml-auto font-mono-ibm text-[0.65rem] tracking-widest bg-[rgba(232,35,42,0.1)] border border-[rgba(232,35,42,0.25)] text-[#ff6b70] px-2 py-0.5 rounded-full whitespace-nowrap"
+              >YEARLY</span
+            >
+          </div>
+        </div>
+        <div
+          class="bg-[#1a1d28] border border-white/7 rounded-2xl p-7 relative overflow-hidden"
+        >
+          <span
+            class="font-bebas text-[5rem] text-[#e8232a] opacity-30 absolute top-3 right-5 leading-[0.6]"
+            >"</span
+          >
+          <div class="text-[#f4c430] mb-3 tracking-wide">★★★★★</div>
+          <p class="text-sm text-[#8a8fa8] leading-[1.75] mb-5">
+            I was skeptical at first — I've been burned by pick services before.
+            The team's transparency about every result, win or loss, is what
+            convinced me to stick around. Now I'm on lifetime.
+          </p>
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-to-br from-[#e8232a] to-[#8b0000] flex items-center justify-center font-extrabold text-[0.9rem] text-white flex-shrink-0"
+            >
+              AM
+            </div>
+            <div>
+              <div class="font-bold text-[0.9rem]">Andre M.</div>
+              <div class="text-xs text-[#5c6077]">Los Angeles, CA</div>
+            </div>
+            <span
+              class="ml-auto font-mono-ibm text-[0.65rem] tracking-widest bg-[rgba(232,35,42,0.1)] border border-[rgba(232,35,42,0.25)] text-[#ff6b70] px-2 py-0.5 rounded-full whitespace-nowrap"
+              >LIFETIME</span
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="border-white/7 max-w-6xl mx-auto" />
+
+    <!-- ===================== PRICING ===================== -->
+    <section
+      id="pricing"
+      class="lazy-section max-w-6xl mx-auto px-4 md:px-12 py-20"
+    >
+      <p
+        class="font-mono-ibm text-[0.7rem] tracking-[0.12em] text-[#e8232a] uppercase mb-3"
+      >
+        Plans
+      </p>
+      <h2
+        class="font-bebas text-[clamp(2.2rem,5vw,3.8rem)] tracking-wide leading-none mb-4"
+      >
+        Choose Your Plan
+      </h2>
+      <p class="text-[#8a8fa8] text-[1.05rem] max-w-xl leading-[1.75]">
+        All plans include full access to the VIP picks chat. Upgrade anytime. No
+        hidden fees.
+      </p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+        <div
+          class="price-card bg-[#1a1d28] border border-white/7 rounded-2xl p-8 flex flex-col"
+        >
+          <p
+            class="font-mono-ibm text-[0.7rem] tracking-widest text-[#5c6077] uppercase mb-4"
+          >
+            Monthly
+          </p>
+          <div class="font-bebas text-[3.5rem] tracking-wide leading-none mb-1">
+            <sup class="text-[1.4rem] font-manrope font-bold align-super">$</sup
+            >130
+          </div>
+          <p class="text-xs text-[#5c6077] mb-1">per month · billed monthly</p>
+          <p class="text-xs font-bold text-transparent mb-6">&nbsp;</p>
+          <ul class="list-none flex flex-col gap-3 flex-1 mb-8">
+            <li class="text-sm text-[#8a8fa8] flex items-start gap-2">
+              <span class="text-[#2ecc8a] font-extrabold flex-shrink-0">✓</span
+              >Full VIP picks chat access
+            </li>
+            <li class="text-sm text-[#8a8fa8] flex items-start gap-2">
+              <span class="text-[#2ecc8a] font-extrabold flex-shrink-0">✓</span
+              >NFL, NBA, MLB, NHL & NCAA picks
+            </li>
+            <li class="text-sm text-[#8a8fa8] flex items-start gap-2">
+              <span class="text-[#2ecc8a] font-extrabold flex-shrink-0">✓</span
+              >Daily picks with full analysis
+            </li>
+            <li class="text-sm text-[#8a8fa8] flex items-start gap-2">
+              <span class="text-[#2ecc8a] font-extrabold flex-shrink-0">✓</span
+              >Line movement notifications
+            </li>
+            <li class="text-sm text-[#8a8fa8] flex items-start gap-2">
+              <span class="text-[#2ecc8a] font-extrabold flex-shrink-0">✓</span
+              >Public track record access
+            </li>
+            <li class="text-sm text-[#5c6077] flex items-start gap-2">
+              <span class="font-extrabold flex-shrink-0">×</span>Weekly model
+              breakdown reports
+            </li>
+            <li class="text-sm text-[#5c6077] flex items-start gap-2">
+              <span class="font-extrabold flex-shrink-0">×</span>Early picks
+              (24hr advance)
+            </li>
+            <li class="text-sm text-[#5c6077] flex items-start gap-2">
+              <span class="font-extrabold flex-shrink-0">×</span>1-on-1 bankroll
+              consultation
+            </li>
+          </ul>
+          <button
+            onclick="openModal('signup')"
+            class="w-full border border-white/10 text-[#f7f8fc] bg-transparent font-extrabold text-[0.95rem] py-[13px] rounded-xl cursor-pointer hover:border-white/25 hover:bg-white/5 transition-all"
+          >
+            Join Monthly
+          </button>
+        </div>
+        <div
+          class="price-card bg-gradient-to-b from-[rgba(232,35,42,0.06)] to-[#1a1d28] border border-[#e8232a] rounded-2xl p-8 flex flex-col relative"
+        >
+          <span
+            class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#e8232a] text-white font-extrabold text-[0.72rem] tracking-widest px-4 py-1.5 rounded-full whitespace-nowrap"
+            >⚡ MOST POPULAR</span
+          >
+          <p
+            class="font-mono-ibm text-[0.7rem] tracking-widest text-[#e8232a] uppercase mb-4"
+          >
+            Yearly
+          </p>
+          <div class="font-bebas text-[3.5rem] tracking-wide leading-none mb-1">
+            <sup class="text-[1.4rem] font-manrope font-bold align-super">$</sup
+            >950
+          </div>
+          <p class="text-xs text-[#5c6077] mb-1">per year · billed annually</p>
+          <p class="text-xs font-bold text-[#2ecc8a] mb-6">
+            Save $610 vs monthly (~$79/mo)
+          </p>
+          <ul class="list-none flex flex-col gap-3 flex-1 mb-8">
+            <li class="text-sm text-[#8a8fa8] flex items-start gap-2">
+              <span class="text-[#2ecc8a] font-extrabold flex-shrink-0">✓</span
+              >Full VIP picks chat access
+            </li>
+            <li class="text-sm text-[#8a8fa8] flex items-start gap-2">
+              <span class="text-[#2ecc8a] font-extrabold flex-shrink-0">✓</span
+              >NFL, NBA, MLB, NHL & NCAA picks
+            </li>
+            <li class="text-sm text-[#8a8fa8] flex items-start gap-2">
+              <span class="text-[#2ecc8a] font-extrabold flex-shrink-0">✓</span
+              >Daily picks with full analysis
+            </li>
+            <li class="text-sm text-[#8a8fa8] flex items-start gap-2">
+              <span class="text-[#2ecc8a] font-extrabold flex-shrink-0">✓</span
+              >Line movement notifications
+            </li>
+            <li class="text-sm text-[#8a8fa8] flex items-start gap-2">
+              <span class="text-[#2ecc8a] font-extrabold flex-shrink-0">✓</span
+              >Public track record access
+            </li>
+            <li class="text-sm text-[#8a8fa8] flex items-start gap-2">
+              <span class="text-[#2ecc8a] font-extrabold flex-shrink-0">✓</span
+              >Weekly model breakdown reports
+            </li>
+            <li class="text-sm text-[#8a8fa8] flex items-start gap-2">
+              <span class="text-[#2ecc8a] font-extrabold flex-shrink-0">✓</span
+              >Early picks (24hr advance)
+            </li>
+            <li class="text-sm text-[#5c6077] flex items-start gap-2">
+              <span class="font-extrabold flex-shrink-0">×</span>1-on-1 bankroll
+              consultation
+            </li>
+          </ul>
+          <button
+            onclick="openModal('signup')"
+            class="w-full bg-[#e8232a] text-white border-none font-extrabold text-[0.95rem] py-[13px] rounded-xl cursor-pointer hover:bg-[#ff2e35] hover:shadow-xl transition-all"
+          >
+            Join Yearly
+          </button>
+        </div>
+        <div
+          class="price-card bg-[#1a1d28] border border-white/7 rounded-2xl p-8 flex flex-col"
+        >
+          <p
+            class="font-mono-ibm text-[0.7rem] tracking-widest text-[#5c6077] uppercase mb-4"
+          >
+            Lifetime
+          </p>
+          <div class="font-bebas text-[3.5rem] tracking-wide leading-none mb-1">
+            <sup class="text-[1.4rem] font-manrope font-bold align-super">$</sup
+            >1,450
+          </div>
+          <p class="text-xs text-[#5c6077] mb-1">
+            one-time payment · forever access
+          </p>
+          <p class="text-xs font-bold text-[#2ecc8a] mb-6">
+            Pay once, never again
+          </p>
+          <ul class="list-none flex flex-col gap-3 flex-1 mb-8">
+            <li class="text-sm text-[#8a8fa8] flex items-start gap-2">
+              <span class="text-[#2ecc8a] font-extrabold flex-shrink-0">✓</span
+              >Full VIP picks chat access
+            </li>
+            <li class="text-sm text-[#8a8fa8] flex items-start gap-2">
+              <span class="text-[#2ecc8a] font-extrabold flex-shrink-0">✓</span
+              >NFL, NBA, MLB, NHL & NCAA picks
+            </li>
+            <li class="text-sm text-[#8a8fa8] flex items-start gap-2">
+              <span class="text-[#2ecc8a] font-extrabold flex-shrink-0">✓</span
+              >Daily picks with full analysis
+            </li>
+            <li class="text-sm text-[#8a8fa8] flex items-start gap-2">
+              <span class="text-[#2ecc8a] font-extrabold flex-shrink-0">✓</span
+              >Line movement notifications
+            </li>
+            <li class="text-sm text-[#8a8fa8] flex items-start gap-2">
+              <span class="text-[#2ecc8a] font-extrabold flex-shrink-0">✓</span
+              >Public track record access
+            </li>
+            <li class="text-sm text-[#8a8fa8] flex items-start gap-2">
+              <span class="text-[#2ecc8a] font-extrabold flex-shrink-0">✓</span
+              >Weekly model breakdown reports
+            </li>
+            <li class="text-sm text-[#8a8fa8] flex items-start gap-2">
+              <span class="text-[#2ecc8a] font-extrabold flex-shrink-0">✓</span
+              >Early picks (24hr advance)
+            </li>
+            <li class="text-sm text-[#8a8fa8] flex items-start gap-2">
+              <span class="text-[#2ecc8a] font-extrabold flex-shrink-0">✓</span
+              >1-on-1 bankroll consultation
+            </li>
+          </ul>
+          <button
+            onclick="openModal('signup')"
+            class="w-full border border-white/10 text-[#f7f8fc] bg-transparent font-extrabold text-[0.95rem] py-[13px] rounded-xl cursor-pointer hover:border-white/25 hover:bg-white/5 transition-all"
+          >
+            Get Lifetime Access
+          </button>
+        </div>
+      </div>
+      <p class="text-center text-xs text-[#5c6077] mt-6">
+        Cancel anytime from your dashboard. No hidden fees.
+      </p>
+    </section>
+
+    <hr class="border-white/7 max-w-6xl mx-auto" />
+
+    <!-- ===================== FAQ ===================== -->
+    <section
+      id="faq"
+      class="lazy-section max-w-6xl mx-auto px-4 md:px-12 py-20"
+    >
+      <p
+        class="font-mono-ibm text-[0.7rem] tracking-[0.12em] text-[#e8232a] uppercase mb-3"
+      >
+        FAQ
+      </p>
+      <h2
+        class="font-bebas text-[clamp(2.2rem,5vw,3.8rem)] tracking-wide leading-none mb-10"
+      >
+        Common Questions
+      </h2>
+      <div class="flex flex-col gap-3 max-w-2xl">
+        <div
+          class="faq-item bg-[#1a1d28] border border-white/7 rounded-xl overflow-hidden"
+        >
+          <button
+            class="faq-q w-full bg-transparent border-none text-[#f7f8fc] font-bold text-[0.95rem] px-6 py-5 text-left cursor-pointer flex justify-between items-center gap-4"
+          >
+            What exactly do I get when I subscribe?
+            <span
+              class="faq-icon flex-shrink-0 w-[22px] h-[22px] rounded-full bg-[rgba(232,35,42,0.1)] border border-[rgba(232,35,42,0.25)] flex items-center justify-center transition-all text-xs text-[#e8232a]"
+              >▾</span
+            >
+          </button>
+          <div
+            class="faq-answer px-6 pb-5 text-sm text-[#8a8fa8] leading-[1.75]"
+          >
+            You get instant access to our private VIP chat channel where our
+            analysts post picks before every game — including the pick, the
+            sportsbook line at time of posting, unit size recommendation, and
+            the full reasoning behind the call. You also get access to our full
+            pick history log and the active member community.
+          </div>
+        </div>
+        <div
+          class="faq-item bg-[#1a1d28] border border-white/7 rounded-xl overflow-hidden"
+        >
+          <button
+            class="faq-q w-full bg-transparent border-none text-[#f7f8fc] font-bold text-[0.95rem] px-6 py-5 text-left cursor-pointer flex justify-between items-center gap-4"
+          >
+            Is this a betting platform or a pick subscription?
+            <span
+              class="faq-icon flex-shrink-0 w-[22px] h-[22px] rounded-full bg-[rgba(232,35,42,0.1)] border border-[rgba(232,35,42,0.25)] flex items-center justify-center transition-all text-xs text-[#e8232a]"
+              >▾</span
+            >
+          </button>
+          <div
+            class="faq-answer px-6 pb-5 text-sm text-[#8a8fa8] leading-[1.75]"
+          >
+            RyanBet is a sports picks information service — a VIP chat
+            subscription. We do not place bets on your behalf, hold your money,
+            or have any affiliation with any sportsbook. You use our picks at
+            your own sportsbook of choice.
+          </div>
+        </div>
+        <div
+          class="faq-item bg-[#1a1d28] border border-white/7 rounded-xl overflow-hidden"
+        >
+          <button
+            class="faq-q w-full bg-transparent border-none text-[#f7f8fc] font-bold text-[0.95rem] px-6 py-5 text-left cursor-pointer flex justify-between items-center gap-4"
+          >
+            How many picks are posted per day?
+            <span
+              class="faq-icon flex-shrink-0 w-[22px] h-[22px] rounded-full bg-[rgba(232,35,42,0.1)] border border-[rgba(232,35,42,0.25)] flex items-center justify-center transition-all text-xs text-[#e8232a]"
+              >▾</span
+            >
+          </button>
+          <div
+            class="faq-answer px-6 pb-5 text-sm text-[#8a8fa8] leading-[1.75]"
+          >
+            Typically 2–5 picks per day depending on the sports calendar. We
+            never force picks when there's no edge — quality over quantity is
+            our core standard. During NFL weekends or playoff runs across
+            multiple sports, there can be more.
+          </div>
+        </div>
+        <div
+          class="faq-item bg-[#1a1d28] border border-white/7 rounded-xl overflow-hidden"
+        >
+          <button
+            class="faq-q w-full bg-transparent border-none text-[#f7f8fc] font-bold text-[0.95rem] px-6 py-5 text-left cursor-pointer flex justify-between items-center gap-4"
+          >
+            Do you guarantee wins?
+            <span
+              class="faq-icon flex-shrink-0 w-[22px] h-[22px] rounded-full bg-[rgba(232,35,42,0.1)] border border-[rgba(232,35,42,0.25)] flex items-center justify-center transition-all text-xs text-[#e8232a]"
+              >▾</span
+            >
+          </button>
+          <div
+            class="faq-answer px-6 pb-5 text-sm text-[#8a8fa8] leading-[1.75]"
+          >
+            No — and any picks service that claims guaranteed wins is lying to
+            you. Sports betting involves variance and risk. What we guarantee is
+            transparent, documented analysis and an honest public record of
+            every pick. Our 90% ATS rate over a documented season is our proof
+            of track record, not a promise of future results.
+          </div>
+        </div>
+        <div
+          class="faq-item bg-[#1a1d28] border border-white/7 rounded-xl overflow-hidden"
+        >
+          <button
+            class="faq-q w-full bg-transparent border-none text-[#f7f8fc] font-bold text-[0.95rem] px-6 py-5 text-left cursor-pointer flex justify-between items-center gap-4"
+          >
+            Can I cancel my subscription?
+            <span
+              class="faq-icon flex-shrink-0 w-[22px] h-[22px] rounded-full bg-[rgba(232,35,42,0.1)] border border-[rgba(232,35,42,0.25)] flex items-center justify-center transition-all text-xs text-[#e8232a]"
+              >▾</span
+            >
+          </button>
+          <div
+            class="faq-answer px-6 pb-5 text-sm text-[#8a8fa8] leading-[1.75]"
+          >
+            Yes. Monthly and yearly plans can be cancelled anytime from your
+            account dashboard. Lifetime access does not require renewal and has
+            no recurring charges.
+          </div>
+        </div>
+        <div
+          class="faq-item bg-[#1a1d28] border border-white/7 rounded-xl overflow-hidden"
+        >
+          <button
+            class="faq-q w-full bg-transparent border-none text-[#f7f8fc] font-bold text-[0.95rem] px-6 py-5 text-left cursor-pointer flex justify-between items-center gap-4"
+          >
+            Which sportsbook should I use?
+            <span
+              class="faq-icon flex-shrink-0 w-[22px] h-[22px] rounded-full bg-[rgba(232,35,42,0.1)] border border-[rgba(232,35,42,0.25)] flex items-center justify-center transition-all text-xs text-[#e8232a]"
+              >▾</span
+            >
+          </button>
+          <div
+            class="faq-answer px-6 pb-5 text-sm text-[#8a8fa8] leading-[1.75]"
+          >
+            We recommend FanDuel and DraftKings for the best line availability
+            and competitive odds, but our picks are sportsbook-agnostic. You can
+            follow along on any legal platform — BetMGM, Bet365, Caesars,
+            PrizePicks, Underdog, and more.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== CTA BANNER ===================== -->
+    <div class="bg-[#e8232a]">
+      <div
+        class="lazy-section max-w-6xl mx-auto px-4 md:px-12 py-20 text-center"
+      >
+        <h2
+          class="font-bebas text-[clamp(2rem,5vw,3.5rem)] tracking-widest mb-3 text-white"
+        >
+          READY TO STOP GUESSING?
+        </h2>
+        <p class="text-white/80 text-base max-w-md mx-auto mb-8">
+          Join 2,400+ members already following our VIP picks every single day.
+        </p>
+        <button
+          onclick="openModal('signup')"
+          class="bg-white text-[#e8232a] font-extrabold text-base px-9 py-[14px] rounded-xl inline-block cursor-pointer hover:bg-[#0c0e14] hover:text-white transition-all"
+        >
+          Join VIP
+        </button>
+      </div>
+    </div>
+
+    <!-- ===================== FOOTER ===================== -->
+    <footer class="bg-[#0c0e14] border-t border-white/7 px-4 md:px-12 py-14">
+      <div class="max-w-6xl mx-auto flex flex-wrap gap-10 justify-between">
+        <div>
+          <a
+            href="#"
+            class="font-bebas text-[1.3rem] tracking-widest text-[#f7f8fc] flex items-center gap-2 no-underline"
+          >
+            <span
+              style="
+                background: #e8232a;
+                width: 9px;
+                height: 9px;
+                border-radius: 50%;
+                display: inline-block;
+              "
+              class="logo-dot"
+            ></span
+            >RYANBET
+          </a>
+          <p class="text-[#8a8fa8] text-sm max-w-[260px] mt-3 leading-[1.6]">
+            A private sports picks subscription community. Transparent records,
+            honest analysis, real results.
+          </p>
+        </div>
+        <div>
+          <h4 class="font-bold text-sm mb-4">Product</h4>
+          <ul class="list-none flex flex-col gap-2">
+            <li>
+              <a
+                href="#how"
+                class="text-[#5c6077] text-sm no-underline hover:text-[#f7f8fc] transition-colors"
+                >How It Works</a
+              >
+            </li>
+            <li>
+              <a
+                href="#picks"
+                class="text-[#5c6077] text-sm no-underline hover:text-[#f7f8fc] transition-colors"
+                >Sports Covered</a
+              >
+            </li>
+            <li>
+              <a
+                href="#news"
+                class="text-[#5c6077] text-sm no-underline hover:text-[#f7f8fc] transition-colors"
+                >Sports News</a
+              >
+            </li>
+            <li>
+              <a
+                href="#books"
+                class="text-[#5c6077] text-sm no-underline hover:text-[#f7f8fc] transition-colors"
+                >Sportsbook Results</a
+              >
+            </li>
+            <li>
+              <a
+                href="#pricing"
+                class="text-[#5c6077] text-sm no-underline hover:text-[#f7f8fc] transition-colors"
+                >Pricing</a
+              >
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-bold text-sm mb-4">Company</h4>
+          <ul class="list-none flex flex-col gap-2">
+            <li>
+              <a
+                href="#"
+                class="text-[#5c6077] text-sm no-underline hover:text-[#f7f8fc] transition-colors"
+                >About Us</a
+              >
+            </li>
+            <li>
+              <a
+                href="#testimonials"
+                class="text-[#5c6077] text-sm no-underline hover:text-[#f7f8fc] transition-colors"
+                >Member Reviews</a
+              >
+            </li>
+            <li>
+              <a
+                href="#faq"
+                class="text-[#5c6077] text-sm no-underline hover:text-[#f7f8fc] transition-colors"
+                >FAQ</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                class="text-[#5c6077] text-sm no-underline hover:text-[#f7f8fc] transition-colors"
+                >Contact</a
+              >
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-bold text-sm mb-4">Legal</h4>
+          <ul class="list-none flex flex-col gap-2">
+            <li>
+              <a
+                href="#"
+                class="text-[#5c6077] text-sm no-underline hover:text-[#f7f8fc] transition-colors"
+                >Terms of Service</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                class="text-[#5c6077] text-sm no-underline hover:text-[#f7f8fc] transition-colors"
+                >Privacy Policy</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                class="text-[#5c6077] text-sm no-underline hover:text-[#f7f8fc] transition-colors"
+                >Responsible Gambling</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                class="text-[#5c6077] text-sm no-underline hover:text-[#f7f8fc] transition-colors"
+                >Disclaimer</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div
+        class="max-w-6xl mx-auto border-t border-white/7 pt-6 mt-8 flex flex-wrap justify-between gap-4"
+      >
+        <p class="text-xs text-[#5c6077]">
+          © 2025 RyanBet. All rights reserved.
+        </p>
+        <p class="text-xs text-[#5c6077] max-w-[560px]">
+          RyanBet provides sports analysis and pick information for
+          entertainment purposes only. We do not facilitate gambling
+          transactions. Sports betting involves substantial financial risk. Must
+          be 21+ and located where sports betting is legal in your jurisdiction.
+          Gamble responsibly.
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      // ============================================================
+      // THEME TOGGLE
+      // ============================================================
+      const htmlEl = document.documentElement;
+      const themeBtn = document.getElementById("themeToggle");
+      const saved = localStorage.getItem("ryanbet-theme") || "dark";
+      if (saved === "light") {
+        htmlEl.classList.remove("dark");
+        htmlEl.classList.add("light");
+        themeBtn.textContent = "☀️";
+      }
+      themeBtn.addEventListener("click", () => {
+        const isLight = htmlEl.classList.contains("light");
+        htmlEl.classList.toggle("dark", isLight);
+        htmlEl.classList.toggle("light", !isLight);
+        themeBtn.textContent = isLight ? "🌙" : "☀️";
+        localStorage.setItem("ryanbet-theme", isLight ? "dark" : "light");
+      });
+
+      // ============================================================
+      // PASSWORD TOGGLE
+      // ============================================================
+      function togglePass(id, btn) {
+        const input = document.getElementById(id);
+        if (input.type === "password") {
+          input.type = "text";
+          btn.textContent = "HIDE";
+        } else {
+          input.type = "password";
+          btn.textContent = "SHOW";
+        }
+      }
+
+      // ============================================================
+      // PASSWORD STRENGTH
+      // ============================================================
+      document
+        .getElementById("signupPass")
+        .addEventListener("input", function () {
+          const val = this.value;
+          const bar = document.getElementById("passBar");
+          let strength = 0;
+          if (val.length >= 8) strength++;
+          if (/[A-Z]/.test(val)) strength++;
+          if (/[0-9]/.test(val)) strength++;
+          if (/[^A-Za-z0-9]/.test(val)) strength++;
+          const colors = ["#e8232a", "#f4c430", "#2ecc8a", "#2ecc8a"];
+          const widths = ["25%", "50%", "75%", "100%"];
+          bar.style.width = val.length ? widths[strength - 1] || "10%" : "0%";
+          bar.style.background = val.length
+            ? colors[strength - 1] || "#e8232a"
+            : "transparent";
+        });
+
+      // ============================================================
+      // AUTH MODAL
+      // ============================================================
+      const modal = document.getElementById("authModal");
+
+      function openModal(tab) {
+        modal.classList.add("active");
+        document.body.style.overflow = "hidden";
+        switchTab(tab || "login");
+      }
+      function closeModal() {
+        modal.classList.remove("active");
+        document.body.style.overflow = "";
+      }
+      function switchTab(tab) {
+        document.getElementById("loginForm").style.display =
+          tab === "login" ? "block" : "none";
+        document
+          .getElementById("signupForm")
+          .classList.toggle("hidden", tab !== "signup");
+        if (tab === "login") {
+          document.getElementById("tabLogin").style.cssText =
+            "background:#e8232a;color:#fff;";
+          document.getElementById("tabSignup").style.cssText =
+            "background:var(--input-bg,#252836);color:#8a8fa8;";
+        } else {
+          document.getElementById("tabSignup").style.cssText =
+            "background:#e8232a;color:#fff;";
+          document.getElementById("tabLogin").style.cssText =
+            "background:var(--input-bg,#252836);color:#8a8fa8;";
+        }
+        document.getElementById("modalSub").textContent =
+          tab === "login"
+            ? "Welcome back — your picks are waiting."
+            : "Create your VIP account.";
+        document.getElementById("loginError").classList.add("hidden");
+        document.getElementById("signupError").classList.add("hidden");
+      }
+
+      // ============================================================
+      // LOGIN HANDLER
+      // ============================================================
+      function handleLogin() {
+        const email = document.getElementById("loginEmail").value.trim();
+        const pass = document.getElementById("loginPass").value;
+        const errEl = document.getElementById("loginError");
+
+        if (!email) {
+          showError(errEl, "Please enter your email address.");
+          return;
+        }
+        if (!email.includes("@")) {
+          showError(errEl, "Please enter a valid email address.");
+          return;
+        }
+        if (!pass) {
+          showError(errEl, "Please enter your password.");
+          return;
+        }
+        if (pass.length < 6) {
+          showError(errEl, "Password must be at least 6 characters.");
+          return;
+        }
+
+        // Retrieve stored user for flag display
+        const stored = JSON.parse(localStorage.getItem("ryanbet-user") || "{}");
+        if (stored.flag) {
+          document.getElementById("navFlag").textContent = stored.flag;
+          document.getElementById("navFlag").style.display = "block";
+        }
+
+        closeModal();
+        // Redirect to dashboard
+        setTimeout(() => {
+          window.location.href = "dashboard.html";
+        }, 200);
+      }
+
+      // ============================================================
+      // SIGNUP HANDLER
+      // ============================================================
+      function handleSignup() {
+        const firstName = document
+          .getElementById("signupFirstName")
+          .value.trim();
+        const lastName = document.getElementById("signupLastName").value.trim();
+        const email = document.getElementById("signupEmail").value.trim();
+        const country = document.getElementById("signupCountry");
+        const pass = document.getElementById("signupPass").value;
+        const errEl = document.getElementById("signupError");
+
+        if (!firstName) {
+          showError(errEl, "Please enter your first name.");
+          return;
+        }
+        if (!lastName) {
+          showError(errEl, "Please enter your last name.");
+          return;
+        }
+        if (!email || !email.includes("@")) {
+          showError(errEl, "Please enter a valid email address.");
+          return;
+        }
+        if (!country.value) {
+          showError(errEl, "Please select your country.");
+          return;
+        }
+        if (!pass || pass.length < 8) {
+          showError(errEl, "Password must be at least 8 characters.");
+          return;
+        }
+
+        // Get flag from selected option
+        const selectedOption = country.options[country.selectedIndex];
+        const flag = selectedOption ? selectedOption.text.split(" ")[0] : "🌍";
+
+        // Store user data
+        localStorage.setItem(
+          "ryanbet-user",
+          JSON.stringify({
+            firstName,
+            lastName,
+            email,
+            country: country.value,
+            flag,
+            plan: "monthly",
+          }),
+        );
+        localStorage.setItem("ryanbet-first-name", firstName);
+
+        // Show flag in nav
+        document.getElementById("navFlag").textContent = flag;
+        document.getElementById("navFlag").style.display = "block";
+
+        closeModal();
+        setTimeout(() => {
+          window.location.href = "dashboard.html";
+        }, 200);
+      }
+
+      function showError(el, msg) {
+        el.textContent = msg;
+        el.classList.remove("hidden");
+        el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+
+      // Nav buttons
+      document
+        .getElementById("navLogin")
+        .addEventListener("click", () => openModal("login"));
+      document
+        .getElementById("navSignup")
+        .addEventListener("click", () => openModal("signup"));
+      document
+        .getElementById("modalClose")
+        .addEventListener("click", closeModal);
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) closeModal();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeModal();
+      });
+
+      // Restore flag on page load if logged in
+      const storedUser = JSON.parse(
+        localStorage.getItem("ryanbet-user") || "{}",
+      );
+      if (storedUser.flag) {
+        document.getElementById("navFlag").textContent = storedUser.flag;
+        document.getElementById("navFlag").style.display = "block";
+      }
+
+      // ============================================================
+      // SPORT FILTER
+      // ============================================================
+      const sportPills = document.querySelectorAll(".sport-pill");
+      const newsCards = document.querySelectorAll(".news-card");
+      const noNewsMsg = document.getElementById("noNewsMsg");
+      const activeSportLabel = document.getElementById("activeSportLabel");
+
+      sportPills.forEach((pill) => {
+        pill.addEventListener("click", () => {
+          // Update active pill
+          sportPills.forEach((p) => p.classList.remove("active"));
+          pill.classList.add("active");
+
+          const sport = pill.dataset.sport;
+
+          // Update label
+          activeSportLabel.textContent = sport === "ALL" ? "" : `— ${sport}`;
+
+          // Filter cards
+          let visible = 0;
+          newsCards.forEach((card) => {
+            if (sport === "ALL" || card.dataset.sport === sport) {
+              card.style.display = "";
+              visible++;
+            } else {
+              card.style.display = "none";
+            }
+          });
+
+          noNewsMsg.classList.toggle("hidden", visible > 0);
+
+          // Scroll to news section
+          document
+            .getElementById("news")
+            .scrollIntoView({ behavior: "smooth" });
+        });
+      });
+
+      // ============================================================
+      // WIN NOTIFICATION TOASTS
+      // ============================================================
+      const winNotifications = [
+        {
+          initials: "MJ",
+          name: "Marcus J.",
+          amount: "+$4,000",
+          book: "Just won on FanDuel 🎉",
+        },
+        {
+          initials: "KL",
+          name: "Kevin L.",
+          amount: "+$2,750",
+          book: "Just cashed on DraftKings 🔥",
+        },
+        {
+          initials: "SR",
+          name: "Sofia R.",
+          amount: "+$1,200",
+          book: "Parlay hit on BetMGM 🏆",
+        },
+        {
+          initials: "DW",
+          name: "DeShawn W.",
+          amount: "+$3,800",
+          book: "NBA pick hit on FanDuel 💰",
+        },
+        {
+          initials: "TR",
+          name: "Tyler R.",
+          amount: "+$890",
+          book: "MLB run line — Caesars ⚾",
+        },
+        {
+          initials: "AM",
+          name: "Andre M.",
+          amount: "+$5,500",
+          book: "NHL puck line — Bet365 🏒",
+        },
+        {
+          initials: "JB",
+          name: "James B.",
+          amount: "+$1,650",
+          book: "NFL spread — DraftKings 🏈",
+        },
+        {
+          initials: "CN",
+          name: "Carlos N.",
+          amount: "+$3,200",
+          book: "Parlay hit — FanDuel 🎯",
+        },
+      ];
+
+      const toast = document.getElementById("winToast");
+      let toastIndex = 0;
+      let toastTimeout;
+
+      function showWinToast() {
+        const n = winNotifications[toastIndex % winNotifications.length];
+        document.getElementById("toastAvatar").textContent = n.initials;
+        document.getElementById("toastName").textContent = n.name;
+        document.getElementById("toastAmount").textContent = n.amount;
+        document.getElementById("toastBook").textContent = n.book;
+        toastIndex++;
+
+        toast.classList.add("show");
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+          toast.classList.remove("show");
+          // Schedule next
+          const delay = 8000 + Math.random() * 7000;
+          setTimeout(showWinToast, delay);
+        }, 5000);
+      }
+
+      // Start toasts after 3s, then random 8-15s intervals
+      setTimeout(showWinToast, 3000);
+
+      // Click to dismiss
+      toast.addEventListener("click", () => {
+        toast.classList.remove("show");
+        clearTimeout(toastTimeout);
+        setTimeout(showWinToast, 10000 + Math.random() * 5000);
+      });
+
+      // ============================================================
+      // MOBILE MENU
+      // ============================================================
+      const mMenu = document.getElementById("mobileMenu");
+      document.getElementById("ham").addEventListener("click", () => {
+        mMenu.classList.toggle("hidden");
+        mMenu.classList.toggle("flex");
+      });
+      document.querySelectorAll(".mobile-link").forEach((a) =>
+        a.addEventListener("click", () => {
+          mMenu.classList.add("hidden");
+          mMenu.classList.remove("flex");
+        }),
+      );
+
+      // ============================================================
+      // FAQ
+      // ============================================================
+      document.querySelectorAll(".faq-q").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const item = btn.parentElement;
+          const isOpen = item.classList.contains("open");
+          document
+            .querySelectorAll(".faq-item")
+            .forEach((i) => i.classList.remove("open"));
+          if (!isOpen) item.classList.add("open");
+        });
+      });
+
+      // ============================================================
+      // SMOOTH SCROLL
+      // ============================================================
+      document.querySelectorAll('a[href^="#"]').forEach((a) => {
+        a.addEventListener("click", (e) => {
+          const t = document.querySelector(a.getAttribute("href"));
+          if (t) {
+            e.preventDefault();
+            t.scrollIntoView({ behavior: "smooth" });
+          }
+        });
+      });
+
+      // ============================================================
+      // LAZY SECTIONS
+      // ============================================================
+      const lazySections = document.querySelectorAll(".lazy-section");
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("visible");
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.08, rootMargin: "0px 0px -40px 0px" },
+      );
+      lazySections.forEach((el) => observer.observe(el));
+
+      // ============================================================
+      // NEWS TIMESTAMP
+      // ============================================================
+      document.getElementById("newsUpdated").textContent =
+        "Updated " +
+        new Date().toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        }) +
+        " · " +
+        new Date().toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+        });
+    </script>
+  </body>
+</html>
