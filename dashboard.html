@@ -36,8 +36,12 @@
       };
     </script>
     <style>
+      * {
+        box-sizing: border-box;
+      }
       body {
         font-family: "Manrope", sans-serif;
+        overflow-x: hidden;
       }
       .font-bebas {
         font-family: "Bebas Neue", cursive;
@@ -86,6 +90,13 @@
         color: #ff6b70;
         border-left: 3px solid #e8232a;
       }
+      .sidebar-link.admin-link {
+        color: #f4c430;
+      }
+      .sidebar-link.admin-link:hover {
+        background: rgba(244, 196, 48, 0.1);
+        color: #f4c430;
+      }
       .balance-card {
         position: relative;
         overflow: hidden;
@@ -100,15 +111,6 @@
           transparent 70%
         );
         pointer-events: none;
-      }
-      .pick-card {
-        transition:
-          transform 0.2s,
-          border-color 0.2s;
-      }
-      .pick-card:hover {
-        transform: translateY(-2px);
-        border-color: rgba(232, 35, 42, 0.3);
       }
       .badge-win {
         background: rgba(46, 204, 138, 0.12);
@@ -149,16 +151,22 @@
       }
       .dash-tab {
         cursor: pointer;
-        padding: 8px 18px;
+        padding: 7px 14px;
         border-radius: 8px;
         font-weight: 700;
-        font-size: 0.88rem;
+        font-size: 0.82rem;
         color: #8a8fa8;
         transition: all 0.2s;
+        white-space: nowrap;
+        border: 1px solid transparent;
       }
       .dash-tab.active {
         background: #e8232a;
         color: #fff;
+      }
+      .dash-tab:not(.active):hover {
+        background: rgba(232, 35, 42, 0.08);
+        color: #f7f8fc;
       }
       .skeleton {
         background: linear-gradient(
@@ -186,160 +194,640 @@
         background: #e8232a;
         animation: pulse2 1.5s infinite;
       }
-      .saved-card {
-        border: 2px solid transparent;
+      .admin-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: rgba(244, 196, 48, 0.12);
+        border: 1px solid rgba(244, 196, 48, 0.35);
+        color: #f4c430;
+        font-size: 0.6rem;
+        font-family: "IBM Plex Mono", monospace;
+        letter-spacing: 0.12em;
+        padding: 2px 7px;
+        border-radius: 999px;
+        animation: pulse2 2.5s infinite;
+      }
+      #sidebarOverlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 49;
+        backdrop-filter: blur(2px);
+      }
+      #sidebarOverlay.open {
+        display: block;
+      }
+      #sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100vh;
+        z-index: 50;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        width: 240px;
+      }
+      #sidebar.open {
+        transform: translateX(0);
+      }
+      @media (min-width: 1024px) {
+        #sidebar {
+          position: sticky;
+          transform: none !important;
+          display: flex !important;
+        }
+        #sidebarOverlay {
+          display: none !important;
+        }
+        #hamBtn {
+          display: none !important;
+        }
+      }
+      .table-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      @media (max-height: 700px) {
+        .modal-box {
+          max-height: 90vh;
+          overflow-y: auto;
+        }
+      }
+
+      /* Withdraw page styles */
+      .pay-method-card {
+        background: #1a1d28;
+        border: 2px solid rgba(255, 255, 255, 0.07);
+        border-radius: 16px;
+        padding: 20px;
         cursor: pointer;
         transition: all 0.2s;
+        position: relative;
       }
-      .saved-card:hover {
-        border-color: rgba(232, 35, 42, 0.35);
+      .pay-method-card:hover {
+        border-color: rgba(232, 35, 42, 0.4);
+        background: #1e2133;
       }
-      .saved-card.selected {
+      .pay-method-card.selected {
         border-color: #e8232a;
+        background: rgba(232, 35, 42, 0.06);
+      }
+      .pay-method-card .check-icon {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #e8232a;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        color: white;
+        font-weight: bold;
+      }
+      .pay-method-card.selected .check-icon {
+        display: flex;
+      }
+      .method-logo {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        flex-shrink: 0;
+      }
+      .withdraw-step {
+        display: none;
+      }
+      .withdraw-step.active {
+        display: block;
+      }
+      .step-indicator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 28px;
+      }
+      .step-dot {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 700;
+        flex-shrink: 0;
+        transition: all 0.3s;
+      }
+      .step-dot.done {
+        background: #e8232a;
+        color: white;
+      }
+      .step-dot.active-dot {
+        background: #e8232a;
+        color: white;
+        box-shadow: 0 0 0 4px rgba(232, 35, 42, 0.2);
+      }
+      .step-dot.pending {
+        background: #252836;
+        color: #5c6077;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .step-line {
+        flex: 1;
+        height: 2px;
+        background: #252836;
+        border-radius: 2px;
+      }
+      .step-line.done {
+        background: #e8232a;
       }
     </style>
   </head>
-  <body class="bg-[#0c0e14] text-[#f7f8fc] overflow-x-hidden">
-    <!-- DEPOSIT MODAL -->
+  <body class="bg-[#0c0e14] text-[#f7f8fc]">
+    <!-- WITHDRAW FULL PAGE MODAL -->
     <div
-      id="depositModal"
-      class="modal-overlay fixed inset-0 bg-black/70 z-[1000] flex items-center justify-center p-4"
+      id="withdrawModal"
+      class="modal-overlay fixed inset-0 bg-black/80 z-[1000] flex items-start justify-center p-4 overflow-y-auto"
     >
       <div
-        class="modal-box bg-[#1a1d28] border border-white/7 rounded-2xl p-8 w-full max-w-[420px] relative shadow-2xl"
+        class="modal-box bg-[#0c0e14] border border-white/7 rounded-2xl w-full max-w-[520px] relative shadow-2xl my-8"
       >
-        <button
-          onclick="closeDeposit()"
-          class="absolute top-4 right-4 bg-[#252836] border border-white/10 text-[#8a8fa8] w-8 h-8 rounded-full cursor-pointer flex items-center justify-center hover:bg-[#e8232a] hover:text-white transition-all"
-        >
-          ✕
-        </button>
-        <div class="font-bebas text-[1.6rem] tracking-widest mb-1">
-          Deposit Funds
-        </div>
-        <p class="text-sm text-[#8a8fa8] mb-6">
-          Add funds to your RyanBet wallet balance.
-        </p>
-        <div class="flex flex-col gap-2 mb-4">
-          <label class="text-xs font-bold text-[#8a8fa8] tracking-widest"
-            >AMOUNT (USD)</label
-          >
-          <input
-            id="depositAmount"
-            type="number"
-            min="10"
-            placeholder="e.g. 500"
-            class="bg-[#252836] border border-white/10 text-[#f7f8fc] text-[.95rem] px-[14px] py-[11px] rounded-xl placeholder-[#5c6077] w-full"
-          />
-        </div>
-        <div class="grid grid-cols-3 gap-2 mb-5">
-          <button
-            onclick="setDeposit(50)"
-            class="bg-[#252836] border border-white/10 text-[#8a8fa8] text-sm font-bold py-2 rounded-lg hover:border-[#e8232a] hover:text-[#ff6b70] transition-all"
-          >
-            $50
-          </button>
-          <button
-            onclick="setDeposit(100)"
-            class="bg-[#252836] border border-white/10 text-[#8a8fa8] text-sm font-bold py-2 rounded-lg hover:border-[#e8232a] hover:text-[#ff6b70] transition-all"
-          >
-            $100
-          </button>
-          <button
-            onclick="setDeposit(250)"
-            class="bg-[#252836] border border-white/10 text-[#8a8fa8] text-sm font-bold py-2 rounded-lg hover:border-[#e8232a] hover:text-[#ff6b70] transition-all"
-          >
-            $250
-          </button>
-          <button
-            onclick="setDeposit(500)"
-            class="bg-[#252836] border border-white/10 text-[#8a8fa8] text-sm font-bold py-2 rounded-lg hover:border-[#e8232a] hover:text-[#ff6b70] transition-all"
-          >
-            $500
-          </button>
-          <button
-            onclick="setDeposit(1000)"
-            class="bg-[#252836] border border-white/10 text-[#8a8fa8] text-sm font-bold py-2 rounded-lg hover:border-[#e8232a] hover:text-[#ff6b70] transition-all"
-          >
-            $1,000
-          </button>
-          <button
-            onclick="setDeposit(2000)"
-            class="bg-[#252836] border border-white/10 text-[#8a8fa8] text-sm font-bold py-2 rounded-lg hover:border-[#e8232a] hover:text-[#ff6b70] transition-all"
-          >
-            $2,000
-          </button>
-        </div>
+        <!-- Header -->
         <div
-          id="depositError"
-          class="hidden bg-[rgba(232,35,42,.1)] border border-[rgba(232,35,42,.3)] text-[#ff6b70] text-xs px-4 py-3 rounded-xl mb-4"
-        ></div>
-        <button
-          onclick="handleDeposit()"
-          class="w-full bg-[#e8232a] text-white border-none font-bold text-base py-[13px] rounded-xl cursor-pointer hover:bg-[#ff2e35] transition-all"
+          class="px-6 pt-6 pb-4 border-b border-white/7 flex items-center justify-between"
         >
-          Confirm Deposit
-        </button>
-        <p class="text-xs text-[#5c6077] text-center mt-3">
-          Demo mode — no real funds are transferred.
-        </p>
+          <div>
+            <p
+              class="font-mono-ibm text-[.63rem] tracking-widest text-[#e8232a] uppercase mb-0.5"
+            >
+              Withdraw
+            </p>
+            <div class="font-bebas text-[1.6rem] tracking-widest">
+              Request Withdrawal
+            </div>
+          </div>
+          <button
+            onclick="closeWithdraw()"
+            class="bg-[#252836] border border-white/10 text-[#8a8fa8] w-9 h-9 rounded-full cursor-pointer flex items-center justify-center hover:bg-[#e8232a] hover:text-white transition-all text-sm"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div class="px-6 py-5">
+          <!-- Step Indicator -->
+          <div class="step-indicator">
+            <div id="sd1" class="step-dot active-dot">1</div>
+            <div id="sl1" class="step-line"></div>
+            <div id="sd2" class="step-dot pending">2</div>
+            <div id="sl2" class="step-line"></div>
+            <div id="sd3" class="step-dot pending">3</div>
+          </div>
+
+          <!-- STEP 1: Amount + Name + Phone -->
+          <div id="wStep1" class="withdraw-step active">
+            <h3 class="font-bold text-base mb-4">Your details</h3>
+            <div class="flex flex-col gap-3 mb-5">
+              <div class="flex flex-col gap-1.5">
+                <label
+                  class="text-xs font-bold text-[#5c6077] tracking-widest uppercase"
+                  >Full Name</label
+                >
+                <input
+                  id="wName"
+                  type="text"
+                  placeholder="John Smith"
+                  class="bg-[#1a1d28] border border-white/10 text-[#f7f8fc] text-[.95rem] px-4 py-3 rounded-xl placeholder-[#5c6077] w-full"
+                />
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label
+                  class="text-xs font-bold text-[#5c6077] tracking-widest uppercase"
+                  >Phone Number</label
+                >
+                <input
+                  id="wPhone"
+                  type="tel"
+                  placeholder="+1 (555) 000-0000"
+                  class="bg-[#1a1d28] border border-white/10 text-[#f7f8fc] text-[.95rem] px-4 py-3 rounded-xl placeholder-[#5c6077] w-full font-mono-ibm"
+                />
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label
+                  class="text-xs font-bold text-[#5c6077] tracking-widest uppercase"
+                  >Amount (USD)</label
+                >
+                <input
+                  id="withdrawAmount"
+                  type="number"
+                  min="10"
+                  placeholder="e.g. 200"
+                  class="bg-[#1a1d28] border border-white/10 text-[#f7f8fc] text-[.95rem] px-4 py-3 rounded-xl placeholder-[#5c6077] w-full"
+                />
+                <div id="walletBal" class="text-xs text-[#5c6077] mt-0.5">
+                  Available: loading…
+                </div>
+              </div>
+            </div>
+            <div
+              id="wError1"
+              class="hidden bg-[rgba(232,35,42,.1)] border border-[rgba(232,35,42,.3)] text-[#ff6b70] text-xs px-4 py-3 rounded-xl mb-4"
+            ></div>
+            <button
+              onclick="nextStep(2)"
+              class="w-full bg-[#e8232a] text-white border-none font-bold text-base py-3.5 rounded-xl cursor-pointer hover:bg-[#ff2e35] transition-all"
+            >
+              Continue →
+            </button>
+          </div>
+
+          <!-- STEP 2: Payment Method -->
+          <div id="wStep2" class="withdraw-step">
+            <h3 class="font-bold text-base mb-1">Choose payment method</h3>
+            <p class="text-xs text-[#5c6077] mb-4">
+              Select how you'd like to receive your funds.
+            </p>
+            <div class="flex flex-col gap-3 mb-5">
+              <!-- CashApp -->
+              <div class="pay-method-card" onclick="selectMethod('cashapp')">
+                <div class="check-icon">✓</div>
+                <div class="flex items-center gap-3">
+                  <div
+                    class="method-logo"
+                    style="
+                      background: linear-gradient(135deg, #00d632, #00a827);
+                    "
+                  >
+                    <svg
+                      width="22"
+                      height="22"
+                      viewBox="0 0 24 24"
+                      fill="white"
+                    >
+                      <path
+                        d="M13.5 5.5c1.09.21 2.09.66 2.96 1.29L18 5.25C16.71 4.16 15.15 3.4 13.5 3.1V1h-3v2.1C7.75 3.73 5 6.75 5 10.5c0 4.14 3.36 7.5 7.5 7.5 2.09 0 4-.82 5.39-2.15L16.35 14c-1.01.92-2.35 1.5-3.85 1.5-3.04 0-5.5-2.46-5.5-5.5S10.46 4.5 13.5 4.5v1zm-3 0v9.99A5.5 5.5 0 0 0 13.5 5.5V1.01A7.5 7.5 0 0 0 6.5 8.5c0 4.14 3.36 7.5 7.5 7.5v-2c-3.04 0-5.5-2.46-5.5-5.5z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="font-bold text-sm">Cash App</div>
+                    <div class="text-xs text-[#5c6077]">
+                      Send to your $Cashtag · Instant
+                    </div>
+                  </div>
+                  <span
+                    class="ml-auto font-mono-ibm text-[.6rem] tracking-widest bg-[rgba(46,204,138,.1)] border border-[rgba(46,204,138,.25)] text-[#2ecc8a] px-2 py-1 rounded-full"
+                    >INSTANT</span
+                  >
+                </div>
+                <div
+                  id="cashapp-fields"
+                  class="hidden mt-4 pt-4 border-t border-white/7"
+                >
+                  <label
+                    class="text-xs font-bold text-[#5c6077] tracking-widest uppercase block mb-1.5"
+                    >Your $Cashtag</label
+                  >
+                  <input
+                    type="text"
+                    id="cashapp-tag"
+                    placeholder="$YourCashtag"
+                    class="bg-[#252836] border border-white/10 text-[#f7f8fc] text-sm px-4 py-2.5 rounded-xl placeholder-[#5c6077] w-full font-mono-ibm"
+                  />
+                </div>
+              </div>
+
+              <!-- Zelle -->
+              <div class="pay-method-card" onclick="selectMethod('zelle')">
+                <div class="check-icon">✓</div>
+                <div class="flex items-center gap-3">
+                  <div
+                    class="method-logo"
+                    style="
+                      background: linear-gradient(135deg, #6a34ff, #9b6cff);
+                    "
+                  >
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M3 6h18v2H9.5L18 16v2H6v-2h11.5L9 8V6H3z"
+                        fill="white"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="font-bold text-sm">Zelle</div>
+                    <div class="text-xs text-[#5c6077]">
+                      Bank transfer via email or phone · Instant
+                    </div>
+                  </div>
+                  <span
+                    class="ml-auto font-mono-ibm text-[.6rem] tracking-widest bg-[rgba(46,204,138,.1)] border border-[rgba(46,204,138,.25)] text-[#2ecc8a] px-2 py-1 rounded-full"
+                    >INSTANT</span
+                  >
+                </div>
+                <div
+                  id="zelle-fields"
+                  class="hidden mt-4 pt-4 border-t border-white/7"
+                >
+                  <label
+                    class="text-xs font-bold text-[#5c6077] tracking-widest uppercase block mb-1.5"
+                    >Email or Phone for Zelle</label
+                  >
+                  <input
+                    type="text"
+                    id="zelle-info"
+                    placeholder="email@example.com or +1 555..."
+                    class="bg-[#252836] border border-white/10 text-[#f7f8fc] text-sm px-4 py-2.5 rounded-xl placeholder-[#5c6077] w-full font-mono-ibm"
+                  />
+                </div>
+              </div>
+
+              <!-- PayPal -->
+              <div class="pay-method-card" onclick="selectMethod('paypal')">
+                <div class="check-icon">✓</div>
+                <div class="flex items-center gap-3">
+                  <div
+                    class="method-logo"
+                    style="
+                      background: linear-gradient(135deg, #003087, #009cde);
+                    "
+                  >
+                    <svg
+                      width="22"
+                      height="22"
+                      viewBox="0 0 24 24"
+                      fill="white"
+                    >
+                      <path
+                        d="M19.554 9.488c.121-.069.176.011.117.13-.908 1.854-2.797 2.951-5.207 2.951H13.16a.504.504 0 0 0-.498.427l-.696 4.4-.197 1.247a.267.267 0 0 0 .263.308h2.77c.219 0 .405-.16.438-.376l.018-.093.347-2.196.022-.12a.442.442 0 0 1 .438-.376h.276c1.787 0 3.184-.727 3.592-2.83.171-.878.083-1.611-.369-2.127a1.762 1.762 0 0 0-.508-.345z"
+                      />
+                      <path
+                        d="M18.993 7.187a4.68 4.68 0 0 0-.57-.126 7.248 7.248 0 0 0-1.148-.083h-3.478a.44.44 0 0 0-.437.376L12.342 13h1.222c2.41 0 4.299-1.097 5.207-2.951.182-.37.262-.769.222-1.239-.02-.245-.075-.457-.18-.623z"
+                      />
+                      <path
+                        d="M8.415 4.503a.44.44 0 0 0-.437.376L6.09 16.168a.267.267 0 0 0 .263.308h2.865l.72-4.568.697-4.4a.441.441 0 0 1 .437-.376h2.213c.414 0 .802.039 1.148.083a4.68 4.68 0 0 1 .57.126c.188.056.356.124.508.203.157-.997.011-1.676-.543-2.29-.598-.665-1.677-.75-3.072-.75H8.415z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="font-bold text-sm">PayPal</div>
+                    <div class="text-xs text-[#5c6077]">
+                      Send to your PayPal account · 1–2 hrs
+                    </div>
+                  </div>
+                  <span
+                    class="ml-auto font-mono-ibm text-[.6rem] tracking-widest bg-[rgba(244,196,48,.1)] border border-[rgba(244,196,48,.25)] text-[#f4c430] px-2 py-1 rounded-full"
+                    >FAST</span
+                  >
+                </div>
+                <div
+                  id="paypal-fields"
+                  class="hidden mt-4 pt-4 border-t border-white/7"
+                >
+                  <label
+                    class="text-xs font-bold text-[#5c6077] tracking-widest uppercase block mb-1.5"
+                    >PayPal Email</label
+                  >
+                  <input
+                    type="email"
+                    id="paypal-email"
+                    placeholder="your@paypal.com"
+                    class="bg-[#252836] border border-white/10 text-[#f7f8fc] text-sm px-4 py-2.5 rounded-xl placeholder-[#5c6077] w-full font-mono-ibm"
+                  />
+                </div>
+              </div>
+
+              <!-- Chime -->
+              <div class="pay-method-card" onclick="selectMethod('chime')">
+                <div class="check-icon">✓</div>
+                <div class="flex items-center gap-3">
+                  <div
+                    class="method-logo"
+                    style="
+                      background: linear-gradient(135deg, #00d26a, #00a851);
+                    "
+                  >
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="white"
+                        stroke-width="1.5"
+                        fill="none"
+                      />
+                      <path d="M8 9l8 3-8 3V9z" fill="white" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="font-bold text-sm">Chime</div>
+                    <div class="text-xs text-[#5c6077]">
+                      Send to your Chime account · Fast
+                    </div>
+                  </div>
+                  <span
+                    class="ml-auto font-mono-ibm text-[.6rem] tracking-widest bg-[rgba(46,204,138,.1)] border border-[rgba(46,204,138,.25)] text-[#2ecc8a] px-2 py-1 rounded-full"
+                    >FAST</span
+                  >
+                </div>
+                <div
+                  id="chime-fields"
+                  class="hidden mt-4 pt-4 border-t border-white/7"
+                >
+                  <label
+                    class="text-xs font-bold text-[#5c6077] tracking-widest uppercase block mb-1.5"
+                    >Chime Email or $Tag</label
+                  >
+                  <input
+                    type="text"
+                    id="chime-info"
+                    placeholder="email@chime.com or $ChimeTag"
+                    class="bg-[#252836] border border-white/10 text-[#f7f8fc] text-sm px-4 py-2.5 rounded-xl placeholder-[#5c6077] w-full font-mono-ibm"
+                  />
+                </div>
+              </div>
+
+              <!-- Other (International) -->
+              <div class="pay-method-card" onclick="selectMethod('other')">
+                <div class="check-icon">✓</div>
+                <div class="flex items-center gap-3">
+                  <div
+                    class="method-logo"
+                    style="
+                      background: linear-gradient(135deg, #1a1d28, #2e3247);
+                      border: 1px solid rgba(255, 255, 255, 0.1);
+                    "
+                  >
+                    <span style="font-size: 22px">🌍</span>
+                  </div>
+                  <div>
+                    <div class="font-bold text-sm">Other / International</div>
+                    <div class="text-xs text-[#5c6077]">
+                      Wire, IBAN, M-Pesa, or another method
+                    </div>
+                  </div>
+                  <span
+                    class="ml-auto font-mono-ibm text-[.6rem] tracking-widest bg-[rgba(138,143,168,.1)] border border-[rgba(138,143,168,.2)] text-[#8a8fa8] px-2 py-1 rounded-full"
+                    >VARIES</span
+                  >
+                </div>
+                <div
+                  id="other-fields"
+                  class="hidden mt-4 pt-4 border-t border-white/7 flex flex-col gap-3"
+                >
+                  <div>
+                    <label
+                      class="text-xs font-bold text-[#5c6077] tracking-widest uppercase block mb-1.5"
+                      >Method Name</label
+                    >
+                    <input
+                      type="text"
+                      id="other-method"
+                      placeholder="e.g. M-Pesa, Wire Transfer, IBAN..."
+                      class="bg-[#252836] border border-white/10 text-[#f7f8fc] text-sm px-4 py-2.5 rounded-xl placeholder-[#5c6077] w-full"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      class="text-xs font-bold text-[#5c6077] tracking-widest uppercase block mb-1.5"
+                      >Your Account / Number / Details</label
+                    >
+                    <textarea
+                      id="other-details"
+                      rows="3"
+                      placeholder="Enter your account number, IBAN, wallet ID, or any details we need to send your funds..."
+                      class="bg-[#252836] border border-white/10 text-[#f7f8fc] text-sm px-4 py-2.5 rounded-xl placeholder-[#5c6077] w-full resize-none"
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              id="wError2"
+              class="hidden bg-[rgba(232,35,42,.1)] border border-[rgba(232,35,42,.3)] text-[#ff6b70] text-xs px-4 py-3 rounded-xl mb-4"
+            ></div>
+            <div class="flex gap-3">
+              <button
+                onclick="nextStep(1)"
+                class="border border-white/10 text-[#8a8fa8] bg-transparent font-bold text-sm px-5 py-3.5 rounded-xl cursor-pointer hover:bg-white/5 transition-all"
+              >
+                ← Back
+              </button>
+              <button
+                onclick="nextStep(3)"
+                class="flex-1 bg-[#e8232a] text-white border-none font-bold text-base py-3.5 rounded-xl cursor-pointer hover:bg-[#ff2e35] transition-all"
+              >
+                Review →
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 3: Review & Confirm -->
+          <div id="wStep3" class="withdraw-step">
+            <h3 class="font-bold text-base mb-4">Review & confirm</h3>
+            <div
+              class="bg-[#1a1d28] border border-white/7 rounded-2xl p-5 mb-5"
+            >
+              <div class="flex flex-col gap-3">
+                <div class="flex justify-between items-center">
+                  <span
+                    class="text-xs text-[#5c6077] font-mono-ibm tracking-widest uppercase"
+                    >Name</span
+                  >
+                  <span id="rev-name" class="font-semibold text-sm">—</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span
+                    class="text-xs text-[#5c6077] font-mono-ibm tracking-widest uppercase"
+                    >Phone</span
+                  >
+                  <span id="rev-phone" class="font-mono-ibm text-sm">—</span>
+                </div>
+                <div class="border-t border-white/7"></div>
+                <div class="flex justify-between items-center">
+                  <span
+                    class="text-xs text-[#5c6077] font-mono-ibm tracking-widest uppercase"
+                    >Method</span
+                  >
+                  <span id="rev-method" class="font-semibold text-sm">—</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span
+                    class="text-xs text-[#5c6077] font-mono-ibm tracking-widests uppercase"
+                    >Account</span
+                  >
+                  <span
+                    id="rev-account"
+                    class="font-mono-ibm text-sm text-right max-w-[200px] break-all"
+                    >—</span
+                  >
+                </div>
+                <div class="border-t border-white/7"></div>
+                <div class="flex justify-between items-center">
+                  <span
+                    class="text-xs text-[#5c6077] font-mono-ibm tracking-widest uppercase"
+                    >Amount</span
+                  >
+                  <span
+                    id="rev-amount"
+                    class="font-bebas text-[1.4rem] text-[#2ecc8a] tracking-wide"
+                    >—</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div
+              class="flex items-start gap-3 bg-[rgba(244,196,48,.07)] border border-[rgba(244,196,48,.2)] px-4 py-3 rounded-xl mb-5"
+            >
+              <span class="text-[#f4c430] text-base flex-shrink-0">⚡</span>
+              <p class="text-xs text-[#8a8fa8] leading-relaxed">
+                We'll review and process your withdrawal within 24 hours. You'll
+                receive a confirmation via the phone number provided.
+              </p>
+            </div>
+            <div
+              id="wError3"
+              class="hidden bg-[rgba(232,35,42,.1)] border border-[rgba(232,35,42,.3)] text-[#ff6b70] text-xs px-4 py-3 rounded-xl mb-4"
+            ></div>
+            <div class="flex gap-3">
+              <button
+                onclick="nextStep(2)"
+                class="border border-white/10 text-[#8a8fa8] bg-transparent font-bold text-sm px-5 py-3.5 rounded-xl cursor-pointer hover:bg-white/5 transition-all"
+              >
+                ← Back
+              </button>
+              <button
+                onclick="handleWithdraw()"
+                class="flex-1 bg-[#e8232a] text-white border-none font-bold text-base py-3.5 rounded-xl cursor-pointer hover:bg-[#ff2e35] transition-all"
+              >
+                Confirm Withdrawal
+              </button>
+            </div>
+            <p class="text-xs text-[#5c6077] text-center mt-3">
+              Demo mode — no real funds are transferred.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- WITHDRAW MODAL -->
-    <div
-      id="withdrawModal"
-      class="modal-overlay fixed inset-0 bg-black/70 z-[1000] flex items-center justify-center p-4"
-    >
-      <div
-        class="modal-box bg-[#1a1d28] border border-white/7 rounded-2xl p-8 w-full max-w-[420px] relative shadow-2xl"
-      >
-        <button
-          onclick="closeWithdraw()"
-          class="absolute top-4 right-4 bg-[#252836] border border-white/10 text-[#8a8fa8] w-8 h-8 rounded-full cursor-pointer flex items-center justify-center hover:bg-[#e8232a] hover:text-white transition-all"
-        >
-          ✕
-        </button>
-        <div class="font-bebas text-[1.6rem] tracking-widest mb-1">
-          Withdraw Funds
-        </div>
-        <p class="text-sm text-[#8a8fa8] mb-6">
-          Withdraw from your available balance.
-        </p>
-        <div class="flex flex-col gap-2 mb-4">
-          <label class="text-xs font-bold text-[#8a8fa8] tracking-widest"
-            >AMOUNT (USD)</label
-          >
-          <input
-            id="withdrawAmount"
-            type="number"
-            min="10"
-            placeholder="e.g. 200"
-            class="bg-[#252836] border border-white/10 text-[#f7f8fc] text-[.95rem] px-[14px] py-[11px] rounded-xl placeholder-[#5c6077] w-full"
-          />
-        </div>
-        <div
-          id="withdrawError"
-          class="hidden bg-[rgba(232,35,42,.1)] border border-[rgba(232,35,42,.3)] text-[#ff6b70] text-xs px-4 py-3 rounded-xl mb-4"
-        ></div>
-        <button
-          onclick="handleWithdraw()"
-          class="w-full bg-[#1a1d28] border border-white/10 text-[#f7f8fc] font-bold text-base py-[13px] rounded-xl cursor-pointer hover:bg-[#252836] transition-all"
-        >
-          Request Withdrawal
-        </button>
-        <p class="text-xs text-[#5c6077] text-center mt-3">
-          Demo mode — no real funds are transferred.
-        </p>
-      </div>
-    </div>
+    <!-- SIDEBAR OVERLAY (mobile) -->
+    <div id="sidebarOverlay" onclick="closeSidebar()"></div>
 
     <!-- LAYOUT -->
     <div class="flex min-h-screen">
-      <!-- SIDEBAR — picks link removed -->
+      <!-- SIDEBAR -->
       <aside
         id="sidebar"
-        class="hidden lg:flex flex-col w-[240px] bg-[#0c0e14] border-r border-white/7 px-4 py-6 flex-shrink-0 sticky top-0 h-screen overflow-y-auto"
+        class="flex flex-col w-[240px] bg-[#0c0e14] border-r border-white/7 px-4 py-6 flex-shrink-0 h-screen overflow-y-auto"
       >
         <a
           href="index.html"
@@ -353,46 +841,74 @@
         <nav class="flex flex-col gap-1 flex-1">
           <a
             href="#"
-            onclick="showTab('overview')"
+            onclick="
+              showTab('overview');
+              closeSidebar();
+            "
             class="sidebar-link active"
             id="nav-overview"
             ><span>📊</span> Overview</a
           >
           <a
             href="#"
-            onclick="showTab('history')"
+            onclick="
+              showTab('history');
+              closeSidebar();
+            "
             class="sidebar-link"
             id="nav-history"
             ><span>📋</span> Pick History</a
           >
           <a
             href="#"
-            onclick="showTab('wallet')"
+            onclick="
+              showTab('wallet');
+              closeSidebar();
+            "
             class="sidebar-link"
             id="nav-wallet"
             ><span>💰</span> Wallet</a
           >
           <a
             href="#"
-            onclick="showTab('billing')"
+            onclick="
+              showTab('billing');
+              closeSidebar();
+            "
             class="sidebar-link"
             id="nav-billing"
             ><span>💳</span> Billing</a
           >
           <a
             href="#"
-            onclick="showTab('account')"
+            onclick="
+              showTab('account');
+              closeSidebar();
+            "
             class="sidebar-link"
             id="nav-account"
             ><span>👤</span> Account</a
           >
-          <div class="mt-auto pt-6 border-t border-white/7 mt-6">
-            <a href="index.html" class="sidebar-link"
-              ><span>🏠</span> Back to Site</a
+          <a
+            href="admin.html"
+            id="nav-admin"
+            class="sidebar-link admin-link hidden"
+            style="margin-top: 8px"
+          >
+            <span>🛡️</span><span>Admin Panel</span
+            ><span class="admin-badge ml-auto">ADMIN</span>
+          </a>
+          <div
+            class="mt-auto pt-6 border-t border-white/7"
+            style="margin-top: auto"
+          >
+            <a href="index.html" class="sidebar-link" style="color: #8a8fa8"
+              ><span>🏠</span> Back to Home</a
             >
             <button
               onclick="handleLogout()"
-              class="sidebar-link w-full text-left border-none bg-transparent mt-1 text-[#e8232a] hover:text-[#ff6b70]"
+              class="sidebar-link w-full text-left border-none bg-transparent mt-1"
+              style="color: #e8232a"
             >
               <span>🚪</span> Log Out
             </button>
@@ -404,11 +920,20 @@
       <div class="flex-1 flex flex-col min-w-0">
         <!-- TOP BAR -->
         <header
-          class="sticky top-0 z-40 bg-[rgba(12,14,20,.95)] backdrop-blur-md border-b border-white/7 px-4 md:px-8 h-[64px] flex items-center justify-between gap-4"
+          class="sticky top-0 z-40 bg-[rgba(12,14,20,.95)] backdrop-blur-md border-b border-white/7 px-4 md:px-8 h-[60px] md:h-[64px] flex items-center justify-between gap-3"
         >
+          <button
+            id="hamBtn"
+            onclick="openSidebar()"
+            class="flex flex-col gap-[5px] bg-transparent border-none text-[#f7f8fc] cursor-pointer p-1 mr-1 flex-shrink-0"
+          >
+            <span class="block w-[20px] h-[2px] bg-current"></span>
+            <span class="block w-[20px] h-[2px] bg-current"></span>
+            <span class="block w-[20px] h-[2px] bg-current"></span>
+          </button>
           <a
             href="index.html"
-            class="lg:hidden font-bebas text-[1.4rem] tracking-widest text-[#f7f8fc] flex items-center gap-2 no-underline"
+            class="lg:hidden font-bebas text-[1.3rem] tracking-widest text-[#f7f8fc] flex items-center gap-2 no-underline flex-shrink-0"
           >
             <span
               class="logo-dot w-[7px] h-[7px] rounded-full bg-[#e8232a] inline-block"
@@ -422,68 +947,90 @@
             >
             <span id="headerFlag" class="text-lg ml-1"></span>
           </div>
-          <div class="flex items-center gap-3 ml-auto">
+          <div class="flex items-center gap-2 md:gap-3 ml-auto">
+            <a
+              href="admin.html"
+              id="header-admin-btn"
+              class="hidden items-center gap-1.5 bg-[rgba(244,196,48,.1)] border border-[rgba(244,196,48,.3)] text-[#f4c430] font-bold text-xs px-2.5 py-1.5 rounded-lg hover:bg-[rgba(244,196,48,.18)] transition-all no-underline"
+            >
+              🛡️ <span class="hidden sm:inline">Admin</span>
+            </a>
+            <a
+              href="index.html"
+              class="flex items-center gap-1.5 bg-[rgba(255,255,255,0.04)] border border-white/10 text-[#8a8fa8] font-bold text-xs px-2.5 py-1.5 rounded-lg hover:border-white/20 hover:text-[#f7f8fc] transition-all no-underline"
+            >
+              🏠 <span class="hidden sm:inline">Home</span>
+            </a>
             <div
-              class="flex items-center gap-2 bg-[rgba(46,204,138,.08)] border border-[rgba(46,204,138,.2)] px-3 py-1.5 rounded-full"
+              class="flex items-center gap-1.5 bg-[rgba(46,204,138,.08)] border border-[rgba(46,204,138,.2)] px-2.5 py-1.5 rounded-full"
             >
               <div class="notif-dot"></div>
               <span
-                class="font-mono-ibm text-[.65rem] tracking-widest text-[#2ecc8a]"
+                class="font-mono-ibm text-[.6rem] tracking-widest text-[#2ecc8a]"
                 >VIP LIVE</span
               >
             </div>
             <button
               onclick="handleLogout()"
-              class="lg:hidden border border-white/10 text-[#8a8fa8] bg-transparent text-xs font-bold px-3 py-2 rounded-lg hover:text-[#e8232a] transition-all"
+              class="lg:hidden border border-white/10 text-[#8a8fa8] bg-transparent text-xs font-bold px-2.5 py-2 rounded-lg hover:text-[#e8232a] transition-all"
             >
-              Log Out
+              Out
             </button>
           </div>
         </header>
 
-        <!-- MOBILE NAV — picks button removed -->
+        <!-- MOBILE NAV TABS -->
         <div
-          class="lg:hidden flex gap-1 px-4 py-3 border-b border-white/7 overflow-x-auto"
+          class="lg:hidden flex gap-1.5 px-3 py-3 border-b border-white/7 overflow-x-auto"
+          style="-webkit-overflow-scrolling: touch; scrollbar-width: none"
         >
           <button
             onclick="showTab('overview')"
             id="mob-overview"
-            class="dash-tab active whitespace-nowrap"
+            class="dash-tab active"
           >
             Overview
           </button>
           <button
             onclick="showTab('history')"
             id="mob-history"
-            class="dash-tab whitespace-nowrap"
+            class="dash-tab"
           >
             History
           </button>
-          <button
-            onclick="showTab('wallet')"
-            id="mob-wallet"
-            class="dash-tab whitespace-nowrap"
-          >
+          <button onclick="showTab('wallet')" id="mob-wallet" class="dash-tab">
             Wallet
           </button>
           <button
             onclick="showTab('billing')"
             id="mob-billing"
-            class="dash-tab whitespace-nowrap"
+            class="dash-tab"
           >
             Billing
           </button>
           <button
             onclick="showTab('account')"
             id="mob-account"
-            class="dash-tab whitespace-nowrap"
+            class="dash-tab"
           >
             Account
+          </button>
+          <button
+            onclick="window.location.href = 'admin.html'"
+            id="mob-admin"
+            class="dash-tab hidden"
+            style="
+              background: rgba(244, 196, 48, 0.12);
+              color: #f4c430;
+              border: 1px solid rgba(244, 196, 48, 0.3);
+            "
+          >
+            🛡️ Admin
           </button>
         </div>
 
         <!-- PAGE CONTENT -->
-        <main class="flex-1 px-4 md:px-8 py-8 max-w-5xl w-full mx-auto">
+        <main class="flex-1 px-3 md:px-8 py-6 md:py-8 max-w-5xl w-full mx-auto">
           <!-- OVERVIEW TAB -->
           <div id="tab-overview">
             <p
@@ -492,17 +1039,17 @@
               Dashboard
             </p>
             <h1
-              class="font-bebas text-[2.5rem] tracking-wide leading-none mb-6"
+              class="font-bebas text-[2rem] md:text-[2.5rem] tracking-wide leading-none mb-5 md:mb-6"
             >
               Your Overview
             </h1>
             <div
-              class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8"
+              class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8"
             >
               <div
-                class="balance-card bg-[#1a1d28] border border-white/7 rounded-2xl p-6"
+                class="balance-card bg-[#1a1d28] border border-white/7 rounded-2xl p-5 md:p-6"
               >
-                <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center justify-between mb-3 md:mb-4">
                   <span
                     class="font-mono-ibm text-[.65rem] tracking-widest text-[#5c6077] uppercase"
                     >Available Balance</span
@@ -511,22 +1058,22 @@
                 </div>
                 <div
                   id="availableBalance"
-                  class="font-bebas text-[2.6rem] tracking-wide leading-none text-[#2ecc8a] mb-1"
+                  class="font-bebas text-[2.2rem] md:text-[2.6rem] tracking-wide leading-none text-[#2ecc8a] mb-1"
                 >
                   <span class="skeleton inline-block w-32 h-9">&nbsp;</span>
                 </div>
                 <p class="text-xs text-[#5c6077]">Ready to use</p>
                 <button
-                  onclick="openDeposit()"
-                  class="mt-4 w-full bg-[#e8232a] text-white border-none font-bold text-sm py-2.5 rounded-xl cursor-pointer hover:bg-[#ff2e35] transition-all"
+                  onclick="openWithdraw()"
+                  class="mt-3 md:mt-4 w-full border border-white/10 text-[#f7f8fc] bg-transparent font-bold text-sm py-2.5 rounded-xl cursor-pointer hover:bg-white/5 transition-all"
                 >
-                  + Deposit
+                  Withdraw
                 </button>
               </div>
               <div
-                class="balance-card bg-[#1a1d28] border border-white/7 rounded-2xl p-6"
+                class="balance-card bg-[#1a1d28] border border-white/7 rounded-2xl p-5 md:p-6"
               >
-                <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center justify-between mb-3 md:mb-4">
                   <span
                     class="font-mono-ibm text-[.65rem] tracking-widest text-[#5c6077] uppercase"
                     >Total Deposited</span
@@ -535,22 +1082,22 @@
                 </div>
                 <div
                   id="depositedBalance"
-                  class="font-bebas text-[2.6rem] tracking-wide leading-none text-[#f4c430] mb-1"
+                  class="font-bebas text-[2.2rem] md:text-[2.6rem] tracking-wide leading-none text-[#f4c430] mb-1"
                 >
                   <span class="skeleton inline-block w-32 h-9">&nbsp;</span>
                 </div>
                 <p class="text-xs text-[#5c6077]">All-time deposits</p>
                 <button
                   onclick="openWithdraw()"
-                  class="mt-4 w-full border border-white/10 text-[#f7f8fc] bg-transparent font-bold text-sm py-2.5 rounded-xl cursor-pointer hover:bg-white/5 transition-all"
+                  class="mt-3 md:mt-4 w-full border border-white/10 text-[#f7f8fc] bg-transparent font-bold text-sm py-2.5 rounded-xl cursor-pointer hover:bg-white/5 transition-all"
                 >
                   Withdraw
                 </button>
               </div>
               <div
-                class="balance-card bg-[#1a1d28] border border-white/7 rounded-2xl p-6"
+                class="balance-card bg-[#1a1d28] border border-white/7 rounded-2xl p-5 md:p-6 sm:col-span-2 lg:col-span-1"
               >
-                <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center justify-between mb-3 md:mb-4">
                   <span
                     class="font-mono-ibm text-[.65rem] tracking-widest text-[#5c6077] uppercase"
                     >Membership</span
@@ -559,7 +1106,7 @@
                 </div>
                 <div
                   id="memberPlan"
-                  class="font-bebas text-[2.6rem] tracking-wide leading-none text-[#e8232a] mb-1"
+                  class="font-bebas text-[2.2rem] md:text-[2.6rem] tracking-wide leading-none text-[#e8232a] mb-1"
                 >
                   <span class="skeleton inline-block w-28 h-9">&nbsp;</span>
                 </div>
@@ -569,50 +1116,62 @@
                 <a
                   href="#"
                   onclick="showTab('account')"
-                  class="mt-4 block w-full border border-[rgba(232,35,42,.4)] text-[#ff6b70] font-bold text-sm py-2.5 rounded-xl cursor-pointer hover:bg-[rgba(232,35,42,.08)] transition-all text-center no-underline"
+                  class="mt-3 md:mt-4 block w-full border border-[rgba(232,35,42,.4)] text-[#ff6b70] font-bold text-sm py-2.5 rounded-xl cursor-pointer hover:bg-[rgba(232,35,42,.08)] transition-all text-center no-underline"
                   >Manage Plan</a
                 >
               </div>
             </div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div
+              class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8"
+            >
               <div
-                class="bg-[#1a1d28] border border-white/7 rounded-xl p-5 text-center"
+                class="bg-[#1a1d28] border border-white/7 rounded-xl p-4 md:p-5 text-center"
               >
-                <div class="font-bebas text-[2rem] text-[#2ecc8a]">85–9–4</div>
                 <div
-                  class="font-mono-ibm text-[.62rem] tracking-widest text-[#5c6077] uppercase mt-1"
+                  class="font-bebas text-[1.7rem] md:text-[2rem] text-[#2ecc8a]"
+                >
+                  85–9–4
+                </div>
+                <div
+                  class="font-mono-ibm text-[.6rem] tracking-widest text-[#5c6077] uppercase mt-1"
                 >
                   Season Record
                 </div>
               </div>
               <div
-                class="bg-[#1a1d28] border border-white/7 rounded-xl p-5 text-center"
+                class="bg-[#1a1d28] border border-white/7 rounded-xl p-4 md:p-5 text-center"
               >
-                <div class="font-bebas text-[2rem]">
+                <div class="font-bebas text-[1.7rem] md:text-[2rem]">
                   90<span class="text-[#e8232a]">%</span>
                 </div>
                 <div
-                  class="font-mono-ibm text-[.62rem] tracking-widest text-[#5c6077] uppercase mt-1"
+                  class="font-mono-ibm text-[.6rem] tracking-widest text-[#5c6077] uppercase mt-1"
                 >
                   Win Rate ATS
                 </div>
               </div>
               <div
-                class="bg-[#1a1d28] border border-white/7 rounded-xl p-5 text-center"
+                class="bg-[#1a1d28] border border-white/7 rounded-xl p-4 md:p-5 text-center"
               >
-                <div class="font-bebas text-[2rem] text-[#f4c430]">+41.7u</div>
                 <div
-                  class="font-mono-ibm text-[.62rem] tracking-widest text-[#5c6077] uppercase mt-1"
+                  class="font-bebas text-[1.7rem] md:text-[2rem] text-[#f4c430]"
+                >
+                  +41.7u
+                </div>
+                <div
+                  class="font-mono-ibm text-[.6rem] tracking-widest text-[#5c6077] uppercase mt-1"
                 >
                   Units Profit
                 </div>
               </div>
               <div
-                class="bg-[#1a1d28] border border-white/7 rounded-xl p-5 text-center"
+                class="bg-[#1a1d28] border border-white/7 rounded-xl p-4 md:p-5 text-center"
               >
-                <div class="font-bebas text-[2rem]">2,400+</div>
+                <div class="font-bebas text-[1.7rem] md:text-[2rem]">
+                  2,400+
+                </div>
                 <div
-                  class="font-mono-ibm text-[.62rem] tracking-widest text-[#5c6077] uppercase mt-1"
+                  class="font-mono-ibm text-[.6rem] tracking-widest text-[#5c6077] uppercase mt-1"
                 >
                   Active Members
                 </div>
@@ -628,39 +1187,39 @@
               Record
             </p>
             <h1
-              class="font-bebas text-[2.5rem] tracking-wide leading-none mb-6"
+              class="font-bebas text-[2rem] md:text-[2.5rem] tracking-wide leading-none mb-5 md:mb-6"
             >
               Pick History
             </h1>
             <div
               class="bg-[#1a1d28] border border-white/7 rounded-2xl overflow-hidden"
             >
-              <div class="overflow-x-auto">
-                <table class="w-full text-sm">
+              <div class="table-scroll">
+                <table class="w-full text-sm min-w-[560px]">
                   <thead>
                     <tr class="border-b border-white/7">
                       <th
-                        class="text-left px-5 py-4 font-mono-ibm text-[.63rem] tracking-widest text-[#5c6077] uppercase"
+                        class="text-left px-4 md:px-5 py-3 md:py-4 font-mono-ibm text-[.63rem] tracking-widest text-[#5c6077] uppercase"
                       >
                         Date
                       </th>
                       <th
-                        class="text-left px-5 py-4 font-mono-ibm text-[.63rem] tracking-widest text-[#5c6077] uppercase"
+                        class="text-left px-4 md:px-5 py-3 md:py-4 font-mono-ibm text-[.63rem] tracking-widest text-[#5c6077] uppercase"
                       >
                         Sport
                       </th>
                       <th
-                        class="text-left px-5 py-4 font-mono-ibm text-[.63rem] tracking-widest text-[#5c6077] uppercase"
+                        class="text-left px-4 md:px-5 py-3 md:py-4 font-mono-ibm text-[.63rem] tracking-widest text-[#5c6077] uppercase"
                       >
                         Pick
                       </th>
                       <th
-                        class="text-left px-5 py-4 font-mono-ibm text-[.63rem] tracking-widest text-[#5c6077] uppercase"
+                        class="text-left px-4 md:px-5 py-3 md:py-4 font-mono-ibm text-[.63rem] tracking-widest text-[#5c6077] uppercase"
                       >
                         Units
                       </th>
                       <th
-                        class="text-left px-5 py-4 font-mono-ibm text-[.63rem] tracking-widest text-[#5c6077] uppercase"
+                        class="text-left px-4 md:px-5 py-3 md:py-4 font-mono-ibm text-[.63rem] tracking-widest text-[#5c6077] uppercase"
                       >
                         Result
                       </th>
@@ -671,14 +1230,20 @@
                       class="border-b border-white/5 hover:bg-white/2 transition-colors"
                     >
                       <td
-                        class="px-5 py-4 text-[#5c6077] font-mono-ibm text-xs"
+                        class="px-4 md:px-5 py-3 md:py-4 text-[#5c6077] font-mono-ibm text-xs"
                       >
                         Jun 21
                       </td>
-                      <td class="px-5 py-4">🏀 NBA</td>
-                      <td class="px-5 py-4 font-semibold">Celtics -6.5</td>
-                      <td class="px-5 py-4 font-mono-ibm text-xs">1.5u</td>
-                      <td class="px-5 py-4">
+                      <td class="px-4 md:px-5 py-3 md:py-4">🏀 NBA</td>
+                      <td class="px-4 md:px-5 py-3 md:py-4 font-semibold">
+                        Celtics -6.5
+                      </td>
+                      <td
+                        class="px-4 md:px-5 py-3 md:py-4 font-mono-ibm text-xs"
+                      >
+                        1.5u
+                      </td>
+                      <td class="px-4 md:px-5 py-3 md:py-4">
                         <span
                           class="badge-win font-mono-ibm text-[.63rem] tracking-widest px-2 py-0.5 rounded-full"
                           >WIN +1.5u</span
@@ -689,14 +1254,20 @@
                       class="border-b border-white/5 hover:bg-white/2 transition-colors"
                     >
                       <td
-                        class="px-5 py-4 text-[#5c6077] font-mono-ibm text-xs"
+                        class="px-4 md:px-5 py-3 md:py-4 text-[#5c6077] font-mono-ibm text-xs"
                       >
                         Jun 20
                       </td>
-                      <td class="px-5 py-4">🏈 NFL</td>
-                      <td class="px-5 py-4 font-semibold">Chiefs -4.5</td>
-                      <td class="px-5 py-4 font-mono-ibm text-xs">1.0u</td>
-                      <td class="px-5 py-4">
+                      <td class="px-4 md:px-5 py-3 md:py-4">🏈 NFL</td>
+                      <td class="px-4 md:px-5 py-3 md:py-4 font-semibold">
+                        Chiefs -4.5
+                      </td>
+                      <td
+                        class="px-4 md:px-5 py-3 md:py-4 font-mono-ibm text-xs"
+                      >
+                        1.0u
+                      </td>
+                      <td class="px-4 md:px-5 py-3 md:py-4">
                         <span
                           class="badge-win font-mono-ibm text-[.63rem] tracking-widest px-2 py-0.5 rounded-full"
                           >WIN +1.0u</span
@@ -707,14 +1278,20 @@
                       class="border-b border-white/5 hover:bg-white/2 transition-colors"
                     >
                       <td
-                        class="px-5 py-4 text-[#5c6077] font-mono-ibm text-xs"
+                        class="px-4 md:px-5 py-3 md:py-4 text-[#5c6077] font-mono-ibm text-xs"
                       >
                         Jun 20
                       </td>
-                      <td class="px-5 py-4">⚾ MLB</td>
-                      <td class="px-5 py-4 font-semibold">Braves -1.5 RL</td>
-                      <td class="px-5 py-4 font-mono-ibm text-xs">0.75u</td>
-                      <td class="px-5 py-4">
+                      <td class="px-4 md:px-5 py-3 md:py-4">⚾ MLB</td>
+                      <td class="px-4 md:px-5 py-3 md:py-4 font-semibold">
+                        Braves -1.5 RL
+                      </td>
+                      <td
+                        class="px-4 md:px-5 py-3 md:py-4 font-mono-ibm text-xs"
+                      >
+                        0.75u
+                      </td>
+                      <td class="px-4 md:px-5 py-3 md:py-4">
                         <span
                           class="badge-loss font-mono-ibm text-[.63rem] tracking-widest px-2 py-0.5 rounded-full"
                           >LOSS -0.75u</span
@@ -725,14 +1302,20 @@
                       class="border-b border-white/5 hover:bg-white/2 transition-colors"
                     >
                       <td
-                        class="px-5 py-4 text-[#5c6077] font-mono-ibm text-xs"
+                        class="px-4 md:px-5 py-3 md:py-4 text-[#5c6077] font-mono-ibm text-xs"
                       >
                         Jun 19
                       </td>
-                      <td class="px-5 py-4">🏒 NHL</td>
-                      <td class="px-5 py-4 font-semibold">Panthers ML -105</td>
-                      <td class="px-5 py-4 font-mono-ibm text-xs">1.0u</td>
-                      <td class="px-5 py-4">
+                      <td class="px-4 md:px-5 py-3 md:py-4">🏒 NHL</td>
+                      <td class="px-4 md:px-5 py-3 md:py-4 font-semibold">
+                        Panthers ML -105
+                      </td>
+                      <td
+                        class="px-4 md:px-5 py-3 md:py-4 font-mono-ibm text-xs"
+                      >
+                        1.0u
+                      </td>
+                      <td class="px-4 md:px-5 py-3 md:py-4">
                         <span
                           class="badge-win font-mono-ibm text-[.63rem] tracking-widest px-2 py-0.5 rounded-full"
                           >WIN +0.95u</span
@@ -743,14 +1326,20 @@
                       class="border-b border-white/5 hover:bg-white/2 transition-colors"
                     >
                       <td
-                        class="px-5 py-4 text-[#5c6077] font-mono-ibm text-xs"
+                        class="px-4 md:px-5 py-3 md:py-4 text-[#5c6077] font-mono-ibm text-xs"
                       >
                         Jun 19
                       </td>
-                      <td class="px-5 py-4">🏀 NBA</td>
-                      <td class="px-5 py-4 font-semibold">Nuggets +5.5</td>
-                      <td class="px-5 py-4 font-mono-ibm text-xs">1.0u</td>
-                      <td class="px-5 py-4">
+                      <td class="px-4 md:px-5 py-3 md:py-4">🏀 NBA</td>
+                      <td class="px-4 md:px-5 py-3 md:py-4 font-semibold">
+                        Nuggets +5.5
+                      </td>
+                      <td
+                        class="px-4 md:px-5 py-3 md:py-4 font-mono-ibm text-xs"
+                      >
+                        1.0u
+                      </td>
+                      <td class="px-4 md:px-5 py-3 md:py-4">
                         <span
                           class="badge-win font-mono-ibm text-[.63rem] tracking-widest px-2 py-0.5 rounded-full"
                           >WIN +1.0u</span
@@ -761,14 +1350,20 @@
                       class="border-b border-white/5 hover:bg-white/2 transition-colors"
                     >
                       <td
-                        class="px-5 py-4 text-[#5c6077] font-mono-ibm text-xs"
+                        class="px-4 md:px-5 py-3 md:py-4 text-[#5c6077] font-mono-ibm text-xs"
                       >
                         Jun 18
                       </td>
-                      <td class="px-5 py-4">🎓 NCAA</td>
-                      <td class="px-5 py-4 font-semibold">Kansas +7</td>
-                      <td class="px-5 py-4 font-mono-ibm text-xs">0.5u</td>
-                      <td class="px-5 py-4">
+                      <td class="px-4 md:px-5 py-3 md:py-4">🎓 NCAA</td>
+                      <td class="px-4 md:px-5 py-3 md:py-4 font-semibold">
+                        Kansas +7
+                      </td>
+                      <td
+                        class="px-4 md:px-5 py-3 md:py-4 font-mono-ibm text-xs"
+                      >
+                        0.5u
+                      </td>
+                      <td class="px-4 md:px-5 py-3 md:py-4">
                         <span
                           class="badge-win font-mono-ibm text-[.63rem] tracking-widest px-2 py-0.5 rounded-full"
                           >WIN +0.5u</span
@@ -777,14 +1372,20 @@
                     </tr>
                     <tr class="hover:bg-white/2 transition-colors">
                       <td
-                        class="px-5 py-4 text-[#5c6077] font-mono-ibm text-xs"
+                        class="px-4 md:px-5 py-3 md:py-4 text-[#5c6077] font-mono-ibm text-xs"
                       >
                         Jun 17
                       </td>
-                      <td class="px-5 py-4">⚾ MLB</td>
-                      <td class="px-5 py-4 font-semibold">Dodgers O8.5</td>
-                      <td class="px-5 py-4 font-mono-ibm text-xs">1.0u</td>
-                      <td class="px-5 py-4">
+                      <td class="px-4 md:px-5 py-3 md:py-4">⚾ MLB</td>
+                      <td class="px-4 md:px-5 py-3 md:py-4 font-semibold">
+                        Dodgers O8.5
+                      </td>
+                      <td
+                        class="px-4 md:px-5 py-3 md:py-4 font-mono-ibm text-xs"
+                      >
+                        1.0u
+                      </td>
+                      <td class="px-4 md:px-5 py-3 md:py-4">
                         <span
                           class="badge-pending font-mono-ibm text-[.63rem] tracking-widest px-2 py-0.5 rounded-full"
                           >PUSH</span
@@ -808,17 +1409,19 @@
               Funds
             </p>
             <h1
-              class="font-bebas text-[2.5rem] tracking-wide leading-none mb-6"
+              class="font-bebas text-[2rem] md:text-[2.5rem] tracking-wide leading-none mb-5 md:mb-6"
             >
               Your Wallet
             </h1>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+            <div
+              class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mb-6 md:mb-8"
+            >
               <div
-                class="balance-card bg-[#1a1d28] border border-white/7 rounded-2xl p-6"
+                class="balance-card bg-[#1a1d28] border border-white/7 rounded-2xl p-5 md:p-6"
               >
-                <div class="flex items-center gap-3 mb-4">
+                <div class="flex items-center gap-3 mb-3 md:mb-4">
                   <div
-                    class="w-10 h-10 rounded-xl bg-[rgba(46,204,138,.12)] border border-[rgba(46,204,138,.2)] flex items-center justify-center text-xl"
+                    class="w-10 h-10 rounded-xl bg-[rgba(46,204,138,.12)] border border-[rgba(46,204,138,.2)] flex items-center justify-center text-xl flex-shrink-0"
                   >
                     💳
                   </div>
@@ -835,23 +1438,23 @@
                 </div>
                 <div
                   id="walletAvailable"
-                  class="font-bebas text-[3rem] tracking-wide leading-none text-[#2ecc8a] mb-4"
+                  class="font-bebas text-[2.5rem] md:text-[3rem] tracking-wide leading-none text-[#2ecc8a] mb-3 md:mb-4"
                 >
                   <span class="skeleton inline-block w-40 h-10">&nbsp;</span>
                 </div>
                 <button
-                  onclick="openDeposit()"
-                  class="w-full bg-[#e8232a] text-white border-none font-bold text-sm py-3 rounded-xl cursor-pointer hover:bg-[#ff2e35] transition-all"
+                  onclick="openWithdraw()"
+                  class="w-full border border-white/10 text-[#f7f8fc] bg-transparent font-bold text-sm py-3 rounded-xl cursor-pointer hover:bg-white/5 transition-all"
                 >
-                  + Deposit Funds
+                  Request Withdrawal
                 </button>
               </div>
               <div
-                class="balance-card bg-[#1a1d28] border border-white/7 rounded-2xl p-6"
+                class="balance-card bg-[#1a1d28] border border-white/7 rounded-2xl p-5 md:p-6"
               >
-                <div class="flex items-center gap-3 mb-4">
+                <div class="flex items-center gap-3 mb-3 md:mb-4">
                   <div
-                    class="w-10 h-10 rounded-xl bg-[rgba(244,196,48,.12)] border border-[rgba(244,196,48,.2)] flex items-center justify-center text-xl"
+                    class="w-10 h-10 rounded-xl bg-[rgba(244,196,48,.12)] border border-[rgba(244,196,48,.2)] flex items-center justify-center text-xl flex-shrink-0"
                   >
                     📥
                   </div>
@@ -868,7 +1471,7 @@
                 </div>
                 <div
                   id="walletDeposited"
-                  class="font-bebas text-[3rem] tracking-wide leading-none text-[#f4c430] mb-4"
+                  class="font-bebas text-[2.5rem] md:text-[3rem] tracking-wide leading-none text-[#f4c430] mb-3 md:mb-4"
                 >
                   <span class="skeleton inline-block w-40 h-10">&nbsp;</span>
                 </div>
@@ -880,15 +1483,15 @@
                 </button>
               </div>
             </div>
-            <h2 class="font-bebas text-[1.5rem] tracking-wide mb-4">
+            <h2
+              class="font-bebas text-[1.4rem] md:text-[1.5rem] tracking-wide mb-4"
+            >
               Recent Transactions
             </h2>
             <div id="txList" class="flex flex-col gap-3">
               <div class="text-center py-8 text-[#5c6077]">
                 <div class="text-3xl mb-2">📭</div>
-                <p class="text-sm">
-                  No transactions yet. Make your first deposit!
-                </p>
+                <p class="text-sm">No transactions yet.</p>
               </div>
             </div>
           </div>
@@ -901,16 +1504,16 @@
               Subscription
             </p>
             <h1
-              class="font-bebas text-[2.5rem] tracking-wide leading-none mb-2"
+              class="font-bebas text-[2rem] md:text-[2.5rem] tracking-wide leading-none mb-2"
             >
               Billing & Payment
             </h1>
-            <p class="text-sm text-[#8a8fa8] mb-6">
+            <p class="text-sm text-[#8a8fa8] mb-5 md:mb-6">
               Send your payment using any method below, then contact us to
               confirm.
             </p>
             <div
-              class="bg-gradient-to-r from-[rgba(232,35,42,.12)] to-[rgba(232,35,42,.04)] border border-[rgba(232,35,42,.3)] rounded-2xl p-6 mb-8 flex flex-wrap items-center justify-between gap-4"
+              class="bg-gradient-to-r from-[rgba(232,35,42,.12)] to-[rgba(232,35,42,.04)] border border-[rgba(232,35,42,.3)] rounded-2xl p-5 md:p-6 mb-6 md:mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
             >
               <div>
                 <div
@@ -920,7 +1523,7 @@
                 </div>
                 <div
                   id="billingPlanName"
-                  class="font-bebas text-[2rem] tracking-wide leading-none mb-1"
+                  class="font-bebas text-[1.8rem] md:text-[2rem] tracking-wide leading-none mb-1"
                 >
                   <span class="skeleton inline-block w-28 h-8">&nbsp;</span>
                 </div>
@@ -943,7 +1546,7 @@
               </div>
             </div>
             <div
-              class="flex items-start gap-3 bg-[rgba(244,196,48,.07)] border border-[rgba(244,196,48,.2)] px-5 py-4 rounded-xl mb-8"
+              class="flex items-start gap-3 bg-[rgba(244,196,48,.07)] border border-[rgba(244,196,48,.2)] px-4 md:px-5 py-4 rounded-xl mb-6 md:mb-8"
             >
               <span class="text-[#f4c430] text-xl flex-shrink-0 mt-0.5"
                 >⚡</span
@@ -959,16 +1562,19 @@
                 </p>
               </div>
             </div>
-            <h2 class="font-bebas text-[1.5rem] tracking-wide mb-4">
+            <h2
+              class="font-bebas text-[1.4rem] md:text-[1.5rem] tracking-wide mb-4"
+            >
               Payment Methods
             </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-              <!-- ZELLE -->
-              <div class="bg-[#1a1d28] border border-white/7 rounded-2xl p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 md:mb-8">
+              <div
+                class="bg-[#1a1d28] border border-white/7 rounded-2xl p-5 md:p-6"
+              >
                 <div class="flex items-center justify-between mb-4">
                   <div class="flex items-center gap-3">
                     <div
-                      class="w-11 h-11 rounded-xl flex items-center justify-center"
+                      class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
                       style="
                         background: linear-gradient(135deg, #6a34ff, #9b6cff);
                       "
@@ -1006,11 +1612,10 @@
                   <div class="flex items-center justify-between gap-2">
                     <span
                       id="zelleAddr"
-                      class="font-mono-ibm text-sm text-[#f7f8fc] font-bold"
+                      class="font-mono-ibm text-sm text-[#f7f8fc] font-bold break-all"
                       data-key="zelle_address"
                       >ryanbet@gmail.com</span
-                    >
-                    <button
+                    ><button
                       onclick="copyText('zelleAddr', this)"
                       class="text-[#5c6077] hover:text-[#2ecc8a] transition-colors flex-shrink-0"
                       title="Copy"
@@ -1049,12 +1654,13 @@
                   include "VIP [your plan]" in the memo.
                 </p>
               </div>
-              <!-- APPLE PAY -->
-              <div class="bg-[#1a1d28] border border-white/7 rounded-2xl p-6">
+              <div
+                class="bg-[#1a1d28] border border-white/7 rounded-2xl p-5 md:p-6"
+              >
                 <div class="flex items-center justify-between mb-4">
                   <div class="flex items-center gap-3">
                     <div
-                      class="w-11 h-11 rounded-xl flex items-center justify-center bg-black border border-white/10"
+                      class="w-11 h-11 rounded-xl flex items-center justify-center bg-black border border-white/10 flex-shrink-0"
                     >
                       <svg
                         width="20"
@@ -1091,8 +1697,7 @@
                       class="font-mono-ibm text-sm text-[#f7f8fc] font-bold"
                       data-key="apple_address"
                       >+1 (555) 012-3456</span
-                    >
-                    <button
+                    ><button
                       onclick="copyText('appleAddr', this)"
                       class="text-[#5c6077] hover:text-[#2ecc8a] transition-colors flex-shrink-0"
                       title="Copy"
@@ -1131,12 +1736,13 @@
                   above → send the plan amount.
                 </p>
               </div>
-              <!-- CHIME -->
-              <div class="bg-[#1a1d28] border border-white/7 rounded-2xl p-6">
+              <div
+                class="bg-[#1a1d28] border border-white/7 rounded-2xl p-5 md:p-6"
+              >
                 <div class="flex items-center justify-between mb-4">
                   <div class="flex items-center gap-3">
                     <div
-                      class="w-11 h-11 rounded-xl flex items-center justify-center"
+                      class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
                       style="
                         background: linear-gradient(135deg, #00d26a, #00a851);
                       "
@@ -1180,8 +1786,7 @@
                       class="font-mono-ibm text-sm text-[#f7f8fc] font-bold"
                       data-key="chime_tag"
                       >$RyanBetVIP</span
-                    >
-                    <button
+                    ><button
                       onclick="copyText('chimeAddr', this)"
                       class="text-[#5c6077] hover:text-[#2ecc8a] transition-colors flex-shrink-0"
                       title="Copy"
@@ -1214,8 +1819,7 @@
                       class="font-mono-ibm text-sm text-[#f7f8fc] font-bold"
                       data-key="chime_email"
                       >ryanbet@gmail.com</span
-                    >
-                    <button
+                    ><button
                       onclick="copyText('chimeEmail', this)"
                       class="text-[#5c6077] hover:text-[#2ecc8a] transition-colors flex-shrink-0"
                       title="Copy"
@@ -1241,12 +1845,13 @@
                   your plan amount with note "VIP".
                 </p>
               </div>
-              <!-- BITCOIN -->
-              <div class="bg-[#1a1d28] border border-white/7 rounded-2xl p-6">
+              <div
+                class="bg-[#1a1d28] border border-white/7 rounded-2xl p-5 md:p-6"
+              >
                 <div class="flex items-center justify-between mb-4">
                   <div class="flex items-center gap-3">
                     <div
-                      class="w-11 h-11 rounded-xl flex items-center justify-center"
+                      class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
                       style="
                         background: linear-gradient(135deg, #f7931a, #e8820c);
                       "
@@ -1283,11 +1888,10 @@
                   <div class="flex items-start justify-between gap-2">
                     <span
                       id="btcAddr"
-                      class="font-mono-ibm text-[.75rem] text-[#f4c430] font-bold break-all leading-relaxed"
+                      class="font-mono-ibm text-[.72rem] text-[#f4c430] font-bold break-all leading-relaxed"
                       data-key="btc_address"
                       >bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</span
-                    >
-                    <button
+                    ><button
                       onclick="copyText('btcAddr', this)"
                       class="text-[#5c6077] hover:text-[#f4c430] transition-colors flex-shrink-0 mt-0.5"
                       title="Copy"
@@ -1309,7 +1913,7 @@
                   </div>
                 </div>
                 <div
-                  class="flex items-center gap-2 bg-[rgba(247,147,26,.06)] border border-[rgba(247,147,26,.15)] px-3 py-2.5 rounded-xl mb-1"
+                  class="flex items-center gap-2 bg-[rgba(247,147,26,.06)] border border-[rgba(247,147,26,.15)] px-3 py-2.5 rounded-xl"
                 >
                   <span class="text-[#f4c430] text-base flex-shrink-0">⚠️</span>
                   <p class="text-xs text-[#8a8fa8]">
@@ -1319,81 +1923,36 @@
                 </div>
               </div>
             </div>
-            <!-- After Payment -->
-            <div
-              class="bg-[#1a1d28] border border-white/7 rounded-2xl p-6 mb-8"
+
+            <h2
+              class="font-bebas text-[1.4rem] md:text-[1.5rem] tracking-wide mb-4"
             >
-              <h3 class="font-bold text-base mb-4 flex items-center gap-2">
-                <span>📲</span> After You Pay
-              </h3>
-              <div class="flex flex-col gap-3">
-                <div class="flex items-start gap-3">
-                  <div
-                    class="w-6 h-6 rounded-full bg-[rgba(232,35,42,.15)] border border-[rgba(232,35,42,.3)] text-[#e8232a] font-bebas text-sm flex items-center justify-center flex-shrink-0 mt-0.5"
-                  >
-                    1
-                  </div>
-                  <p class="text-sm text-[#8a8fa8]">
-                    Screenshot your payment confirmation / transaction ID.
-                  </p>
-                </div>
-                <div class="flex items-start gap-3">
-                  <div
-                    class="w-6 h-6 rounded-full bg-[rgba(232,35,42,.15)] border border-[rgba(232,35,42,.3)] text-[#e8232a] font-bebas text-sm flex items-center justify-center flex-shrink-0 mt-0.5"
-                  >
-                    2
-                  </div>
-                  <p class="text-sm text-[#8a8fa8]">
-                    DM us on Instagram
-                    <span class="text-[#f7f8fc] font-bold">@RyanBetVIP</span> or
-                    text
-                    <span class="text-[#f7f8fc] font-bold"
-                      >+1 (555) 012-3456</span
-                    >
-                    with your screenshot.
-                  </p>
-                </div>
-                <div class="flex items-start gap-3">
-                  <div
-                    class="w-6 h-6 rounded-full bg-[rgba(232,35,42,.15)] border border-[rgba(232,35,42,.3)] text-[#e8232a] font-bebas text-sm flex items-center justify-center flex-shrink-0 mt-0.5"
-                  >
-                    3
-                  </div>
-                  <p class="text-sm text-[#8a8fa8]">
-                    We'll activate your VIP access and send your invite link
-                    within minutes.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <!-- Billing History -->
-            <h2 class="font-bebas text-[1.5rem] tracking-wide mb-4">
               Billing History
             </h2>
             <div
               class="bg-[#1a1d28] border border-white/7 rounded-2xl overflow-hidden"
             >
-              <div class="overflow-x-auto">
-                <table class="w-full text-sm">
+              <div class="table-scroll">
+                <table class="w-full text-sm min-w-[480px]">
                   <thead>
                     <tr class="border-b border-white/7">
                       <th
-                        class="text-left px-5 py-4 font-mono-ibm text-[.63rem] tracking-widest text-[#5c6077] uppercase"
+                        class="text-left px-4 md:px-5 py-3 md:py-4 font-mono-ibm text-[.63rem] tracking-widest text-[#5c6077] uppercase"
                       >
                         Date
                       </th>
                       <th
-                        class="text-left px-5 py-4 font-mono-ibm text-[.63rem] tracking-widest text-[#5c6077] uppercase"
+                        class="text-left px-4 md:px-5 py-3 md:py-4 font-mono-ibm text-[.63rem] tracking-widest text-[#5c6077] uppercase"
                       >
                         Description
                       </th>
                       <th
-                        class="text-left px-5 py-4 font-mono-ibm text-[.63rem] tracking-widest text-[#5c6077] uppercase"
+                        class="text-left px-4 md:px-5 py-3 md:py-4 font-mono-ibm text-[.63rem] tracking-widest text-[#5c6077] uppercase"
                       >
                         Amount
                       </th>
                       <th
-                        class="text-left px-5 py-4 font-mono-ibm text-[.63rem] tracking-widest text-[#5c6077] uppercase"
+                        class="text-left px-4 md:px-5 py-3 md:py-4 font-mono-ibm text-[.63rem] tracking-widest text-[#5c6077] uppercase"
                       >
                         Status
                       </th>
@@ -1404,15 +1963,19 @@
                       class="border-b border-white/5 hover:bg-white/2 transition-colors"
                     >
                       <td
-                        class="px-5 py-4 text-[#5c6077] font-mono-ibm text-xs"
+                        class="px-4 md:px-5 py-3 md:py-4 text-[#5c6077] font-mono-ibm text-xs"
                       >
                         Jun 1, 2025
                       </td>
-                      <td class="px-5 py-4 font-semibold">Monthly VIP Plan</td>
-                      <td class="px-5 py-4 font-mono-ibm text-sm font-bold">
+                      <td class="px-4 md:px-5 py-3 md:py-4 font-semibold">
+                        Monthly VIP Plan
+                      </td>
+                      <td
+                        class="px-4 md:px-5 py-3 md:py-4 font-mono-ibm text-sm font-bold"
+                      >
                         $130.00
                       </td>
-                      <td class="px-5 py-4">
+                      <td class="px-4 md:px-5 py-3 md:py-4">
                         <span
                           class="badge-win font-mono-ibm text-[.63rem] tracking-widest px-2 py-0.5 rounded-full"
                           >PAID</span
@@ -1423,15 +1986,19 @@
                       class="border-b border-white/5 hover:bg-white/2 transition-colors"
                     >
                       <td
-                        class="px-5 py-4 text-[#5c6077] font-mono-ibm text-xs"
+                        class="px-4 md:px-5 py-3 md:py-4 text-[#5c6077] font-mono-ibm text-xs"
                       >
                         May 1, 2025
                       </td>
-                      <td class="px-5 py-4 font-semibold">Monthly VIP Plan</td>
-                      <td class="px-5 py-4 font-mono-ibm text-sm font-bold">
+                      <td class="px-4 md:px-5 py-3 md:py-4 font-semibold">
+                        Monthly VIP Plan
+                      </td>
+                      <td
+                        class="px-4 md:px-5 py-3 md:py-4 font-mono-ibm text-sm font-bold"
+                      >
                         $130.00
                       </td>
-                      <td class="px-5 py-4">
+                      <td class="px-4 md:px-5 py-3 md:py-4">
                         <span
                           class="badge-win font-mono-ibm text-[.63rem] tracking-widest px-2 py-0.5 rounded-full"
                           >PAID</span
@@ -1440,15 +2007,19 @@
                     </tr>
                     <tr class="hover:bg-white/2 transition-colors">
                       <td
-                        class="px-5 py-4 text-[#5c6077] font-mono-ibm text-xs"
+                        class="px-4 md:px-5 py-3 md:py-4 text-[#5c6077] font-mono-ibm text-xs"
                       >
                         Apr 1, 2025
                       </td>
-                      <td class="px-5 py-4 font-semibold">Monthly VIP Plan</td>
-                      <td class="px-5 py-4 font-mono-ibm text-sm font-bold">
+                      <td class="px-4 md:px-5 py-3 md:py-4 font-semibold">
+                        Monthly VIP Plan
+                      </td>
+                      <td
+                        class="px-4 md:px-5 py-3 md:py-4 font-mono-ibm text-sm font-bold"
+                      >
                         $130.00
                       </td>
-                      <td class="px-5 py-4">
+                      <td class="px-4 md:px-5 py-3 md:py-4">
                         <span
                           class="badge-win font-mono-ibm text-[.63rem] tracking-widest px-2 py-0.5 rounded-full"
                           >PAID</span
@@ -1472,12 +2043,14 @@
               Settings
             </p>
             <h1
-              class="font-bebas text-[2.5rem] tracking-wide leading-none mb-6"
+              class="font-bebas text-[2rem] md:text-[2.5rem] tracking-wide leading-none mb-5 md:mb-6"
             >
               Your Account
             </h1>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div class="bg-[#1a1d28] border border-white/7 rounded-2xl p-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6">
+              <div
+                class="bg-[#1a1d28] border border-white/7 rounded-2xl p-5 md:p-6"
+              >
                 <h2 class="font-bold text-base mb-5">Profile Info</h2>
                 <div class="flex flex-col gap-4">
                   <div class="flex flex-col gap-1.5">
@@ -1499,7 +2072,7 @@
                     >
                     <div
                       id="acctEmail"
-                      class="bg-[#252836] border border-white/7 text-[#8a8fa8] text-[.9rem] px-4 py-3 rounded-xl font-mono-ibm text-xs"
+                      class="bg-[#252836] border border-white/7 text-[#8a8fa8] text-[.9rem] px-4 py-3 rounded-xl font-mono-ibm text-xs break-all"
                     >
                       <span class="skeleton inline-block w-48 h-5">&nbsp;</span>
                     </div>
@@ -1518,7 +2091,9 @@
                   </div>
                 </div>
               </div>
-              <div class="bg-[#1a1d28] border border-white/7 rounded-2xl p-6">
+              <div
+                class="bg-[#1a1d28] border border-white/7 rounded-2xl p-5 md:p-6"
+              >
                 <h2 class="font-bold text-base mb-5">Membership</h2>
                 <div class="flex flex-col gap-4">
                   <div
@@ -1578,9 +2153,36 @@
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlyemhzdHJldnljdmNoYW96anJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMzkyODYsImV4cCI6MjA5NzcxNTI4Nn0.NPzbARyaViAmcr4wMSxKHHE6BTCINgliPUlRwRJVDTI",
       );
 
-      let currentUser = null;
-      let profile = null;
-      let transactions = [];
+      const ADMIN_EMAILS = ["admin@ryanbet.com", "ryan@ryanbet.com"];
+      function isAdmin(email) {
+        return email && ADMIN_EMAILS.includes(email.toLowerCase().trim());
+      }
+      function showAdminUI() {
+        document.getElementById("nav-admin").classList.remove("hidden");
+        const h = document.getElementById("header-admin-btn");
+        h.classList.remove("hidden");
+        h.style.display = "flex";
+        document.getElementById("mob-admin").classList.remove("hidden");
+      }
+
+      function openSidebar() {
+        document.getElementById("sidebar").classList.add("open");
+        document.getElementById("sidebarOverlay").classList.add("open");
+        document.body.style.overflow = "hidden";
+      }
+      function closeSidebar() {
+        document.getElementById("sidebar").classList.remove("open");
+        document.getElementById("sidebarOverlay").classList.remove("open");
+        document.body.style.overflow = "";
+      }
+      window.openSidebar = openSidebar;
+      window.closeSidebar = closeSidebar;
+
+      let currentUser = null,
+        profile = null,
+        transactions = [];
+      let selectedMethod = null;
+      let currentWithdrawStep = 1;
 
       async function loadPaymentSettings() {
         const { data, error } = await sb.from("payment_settings").select("*");
@@ -1600,6 +2202,7 @@
           return;
         }
         currentUser = session.user;
+        if (isAdmin(currentUser.email)) showAdminUI();
         await loadProfile();
         await loadPaymentSettings();
       }
@@ -1684,6 +2287,8 @@
                 day: "numeric",
                 year: "numeric",
               });
+        document.getElementById("walletBal").textContent =
+          "Available: " + balance;
       }
 
       function formatMoney(n) {
@@ -1710,7 +2315,7 @@
       function renderTransactions() {
         const list = document.getElementById("txList");
         if (!transactions.length) {
-          list.innerHTML = `<div class="text-center py-8 text-[#5c6077]"><div class="text-3xl mb-2">📭</div><p class="text-sm">No transactions yet. Make your first deposit!</p></div>`;
+          list.innerHTML = `<div class="text-center py-8 text-[#5c6077]"><div class="text-3xl mb-2">📭</div><p class="text-sm">No transactions yet.</p></div>`;
           return;
         }
         list.innerHTML = transactions
@@ -1721,18 +2326,11 @@
               day: "numeric",
               year: "numeric",
             });
-            return `<div class="bg-[#1a1d28] border border-white/7 rounded-xl px-5 py-4 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg ${isDeposit ? "bg-[rgba(46,204,138,.1)]" : "bg-[rgba(232,35,42,.1)]"}">${isDeposit ? "📥" : "📤"}</div>
-              <div><div class="font-bold text-sm">${isDeposit ? "Deposit" : "Withdrawal"}</div><div class="font-mono-ibm text-xs text-[#5c6077]">${date}</div></div>
-            </div>
-            <div class="font-bebas text-[1.2rem] ${isDeposit ? "text-[#2ecc8a]" : "text-[#ff6b70]"}">${isDeposit ? "+" : "-"}${formatMoney(tx.amount)}</div>
-          </div>`;
+            return `<div class="bg-[#1a1d28] border border-white/7 rounded-xl px-4 md:px-5 py-3 md:py-4 flex items-center justify-between gap-3"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0 ${isDeposit ? "bg-[rgba(46,204,138,.1)]" : "bg-[rgba(232,35,42,.1)]"}">${isDeposit ? "📥" : "📤"}</div><div><div class="font-bold text-sm">${isDeposit ? "Deposit" : "Withdrawal"}</div><div class="font-mono-ibm text-xs text-[#5c6077]">${date}</div></div></div><div class="font-bebas text-[1.2rem] ${isDeposit ? "text-[#2ecc8a]" : "text-[#ff6b70]"}">${isDeposit ? "+" : "-"}${formatMoney(tx.amount)}</div></div>`;
           })
           .join("");
       }
 
-      /* "picks" removed from TABS — sidebar link and mobile button also removed above */
       const TABS = ["overview", "history", "wallet", "billing", "account"];
       function showTab(name) {
         TABS.forEach((t) => {
@@ -1748,64 +2346,9 @@
       }
       window.showTab = showTab;
 
-      function openDeposit() {
-        document.getElementById("depositModal").classList.add("active");
-      }
-      function closeDeposit() {
-        document.getElementById("depositModal").classList.remove("active");
-      }
-      function setDeposit(n) {
-        document.getElementById("depositAmount").value = n;
-      }
-      window.openDeposit = openDeposit;
-      window.closeDeposit = closeDeposit;
-      window.setDeposit = setDeposit;
-
-      async function handleDeposit() {
-        const amt = parseFloat(document.getElementById("depositAmount").value);
-        const errEl = document.getElementById("depositError");
-        errEl.classList.add("hidden");
-        if (!amt || amt < 10) {
-          errEl.textContent = "Minimum deposit is $10.";
-          errEl.classList.remove("hidden");
-          return;
-        }
-        const btn = document.querySelector(
-          "#depositModal button[onclick='handleDeposit()']",
-        );
-        if (btn) {
-          btn.textContent = "Processing…";
-          btn.disabled = true;
-        }
-        const newBalance = (profile.balance || 0) + amt,
-          newDeposited = (profile.deposited || 0) + amt;
-        const { error } = await sb
-          .from("users")
-          .update({ balance: newBalance, deposited: newDeposited })
-          .eq("id", currentUser.id);
-        await sb
-          .from("transactions")
-          .insert({ user_id: currentUser.id, type: "deposit", amount: amt });
-        if (btn) {
-          btn.textContent = "Confirm Deposit";
-          btn.disabled = false;
-        }
-        if (error) {
-          errEl.textContent = "Update failed: " + error.message;
-          errEl.classList.remove("hidden");
-          return;
-        }
-        profile.balance = newBalance;
-        profile.deposited = newDeposited;
-        renderProfile();
-        await loadTransactions();
-        closeDeposit();
-        document.getElementById("depositAmount").value = "";
-        showSuccessToast(`Deposited ${formatMoney(amt)} successfully!`);
-      }
-      window.handleDeposit = handleDeposit;
-
+      /* ---- WITHDRAW MULTI-STEP ---- */
       function openWithdraw() {
+        resetWithdrawModal();
         document.getElementById("withdrawModal").classList.add("active");
       }
       function closeWithdraw() {
@@ -1814,22 +2357,162 @@
       window.openWithdraw = openWithdraw;
       window.closeWithdraw = closeWithdraw;
 
+      function resetWithdrawModal() {
+        currentWithdrawStep = 1;
+        selectedMethod = null;
+        document
+          .querySelectorAll(".pay-method-card")
+          .forEach((c) => c.classList.remove("selected"));
+        document
+          .querySelectorAll("[id$='-fields']")
+          .forEach((f) => f.classList.add("hidden"));
+        document.getElementById("withdrawAmount").value = "";
+        document.getElementById("wName").value = "";
+        document.getElementById("wPhone").value = "";
+        ["wError1", "wError2", "wError3"].forEach((id) => {
+          const e = document.getElementById(id);
+          e.classList.add("hidden");
+        });
+        goToStep(1);
+        if (profile)
+          document.getElementById("walletBal").textContent =
+            "Available: " + formatMoney(profile.balance || 0);
+      }
+
+      function goToStep(n) {
+        currentWithdrawStep = n;
+        [1, 2, 3].forEach((i) => {
+          document
+            .getElementById("wStep" + i)
+            .classList.toggle("active", i === n);
+          const dot = document.getElementById("sd" + i);
+          if (i < n) {
+            dot.className = "step-dot done";
+            dot.textContent = "✓";
+          } else if (i === n) {
+            dot.className = "step-dot active-dot";
+            dot.textContent = i;
+          } else {
+            dot.className = "step-dot pending";
+            dot.textContent = i;
+          }
+          if (i < 3) {
+            const line = document.getElementById("sl" + i);
+            line.classList.toggle("done", i < n);
+          }
+        });
+      }
+
+      function nextStep(n) {
+        if (n === 2) {
+          const name = document.getElementById("wName").value.trim();
+          const phone = document.getElementById("wPhone").value.trim();
+          const amt = parseFloat(
+            document.getElementById("withdrawAmount").value,
+          );
+          const err = document.getElementById("wError1");
+          err.classList.add("hidden");
+          if (!name) {
+            err.textContent = "Please enter your full name.";
+            err.classList.remove("hidden");
+            return;
+          }
+          if (!phone) {
+            err.textContent = "Please enter your phone number.";
+            err.classList.remove("hidden");
+            return;
+          }
+          if (!amt || amt < 10) {
+            err.textContent = "Minimum withdrawal is $10.";
+            err.classList.remove("hidden");
+            return;
+          }
+          if (amt > (profile?.balance || 0)) {
+            err.textContent = "Insufficient balance.";
+            err.classList.remove("hidden");
+            return;
+          }
+        }
+        if (n === 3) {
+          const err = document.getElementById("wError2");
+          err.classList.add("hidden");
+          if (!selectedMethod) {
+            err.textContent = "Please select a payment method.";
+            err.classList.remove("hidden");
+            return;
+          }
+          const fieldMap = {
+            cashapp: "cashapp-tag",
+            zelle: "zelle-info",
+            paypal: "paypal-email",
+            chime: "chime-info",
+            other: "other-method",
+          };
+          const fieldId = fieldMap[selectedMethod];
+          const fieldVal = document.getElementById(fieldId)?.value.trim();
+          if (!fieldVal) {
+            err.textContent =
+              "Please fill in your account details for the selected method.";
+            err.classList.remove("hidden");
+            return;
+          }
+          // Populate review
+          const methodLabels = {
+            cashapp: "Cash App",
+            zelle: "Zelle",
+            paypal: "PayPal",
+            chime: "Chime",
+            other: "Other / International",
+          };
+          document.getElementById("rev-name").textContent = document
+            .getElementById("wName")
+            .value.trim();
+          document.getElementById("rev-phone").textContent = document
+            .getElementById("wPhone")
+            .value.trim();
+          document.getElementById("rev-method").textContent =
+            methodLabels[selectedMethod] || selectedMethod;
+          let accountDisplay = fieldVal;
+          if (selectedMethod === "other") {
+            const extra = document
+              .getElementById("other-details")
+              ?.value.trim();
+            if (extra) accountDisplay += "\n" + extra;
+          }
+          document.getElementById("rev-account").textContent = accountDisplay;
+          document.getElementById("rev-amount").textContent = formatMoney(
+            parseFloat(document.getElementById("withdrawAmount").value),
+          );
+        }
+        goToStep(n);
+      }
+      window.nextStep = nextStep;
+
+      function selectMethod(method) {
+        selectedMethod = method;
+        document
+          .querySelectorAll(".pay-method-card")
+          .forEach((c) => c.classList.remove("selected"));
+        document
+          .querySelectorAll("[id$='-fields']")
+          .forEach((f) => f.classList.add("hidden"));
+        const card = document.querySelector(
+          `[onclick="selectMethod('${method}')"]`,
+        );
+        if (card) {
+          card.classList.add("selected");
+          const fields = document.getElementById(method + "-fields");
+          if (fields) fields.classList.remove("hidden");
+        }
+      }
+      window.selectMethod = selectMethod;
+
       async function handleWithdraw() {
         const amt = parseFloat(document.getElementById("withdrawAmount").value);
-        const errEl = document.getElementById("withdrawError");
+        const errEl = document.getElementById("wError3");
         errEl.classList.add("hidden");
-        if (!amt || amt < 10) {
-          errEl.textContent = "Minimum withdrawal is $10.";
-          errEl.classList.remove("hidden");
-          return;
-        }
-        if (amt > (profile.balance || 0)) {
-          errEl.textContent = "Insufficient balance.";
-          errEl.classList.remove("hidden");
-          return;
-        }
         const btn = document.querySelector(
-          "#withdrawModal button[onclick='handleWithdraw()']",
+          "#wStep3 button[onclick='handleWithdraw()']",
         );
         if (btn) {
           btn.textContent = "Processing…";
@@ -1844,7 +2527,7 @@
           .from("transactions")
           .insert({ user_id: currentUser.id, type: "withdrawal", amount: amt });
         if (btn) {
-          btn.textContent = "Request Withdrawal";
+          btn.textContent = "Confirm Withdrawal";
           btn.disabled = false;
         }
         if (error) {
@@ -1856,8 +2539,9 @@
         renderProfile();
         await loadTransactions();
         closeWithdraw();
-        document.getElementById("withdrawAmount").value = "";
-        showSuccessToast(`Withdrawal of ${formatMoney(amt)} requested!`);
+        showSuccessToast(
+          `Withdrawal of ${formatMoney(amt)} requested! We'll process it within 24 hours.`,
+        );
       }
       window.handleWithdraw = handleWithdraw;
 
@@ -1890,7 +2574,7 @@
       function showSuccessToast(msg) {
         const t = document.createElement("div");
         t.style.cssText =
-          "position:fixed;bottom:24px;right:24px;z-index:9999;background:#1a1d28;border:1px solid rgba(46,204,138,.4);border-radius:14px;padding:14px 18px;color:#2ecc8a;font-weight:700;font-size:.9rem;box-shadow:0 8px 32px rgba(0,0,0,.5);transition:all .4s;opacity:0;transform:translateY(10px);";
+          "position:fixed;bottom:16px;right:16px;z-index:9999;background:#1a1d28;border:1px solid rgba(46,204,138,.4);border-radius:14px;padding:12px 16px;color:#2ecc8a;font-weight:700;font-size:.88rem;box-shadow:0 8px 32px rgba(0,0,0,.5);transition:all .4s;opacity:0;transform:translateY(10px);max-width:calc(100vw - 32px);";
         t.textContent = "✅ " + msg;
         document.body.appendChild(t);
         setTimeout(() => {
@@ -1909,10 +2593,6 @@
       }
       window.handleLogout = handleLogout;
 
-      document.getElementById("depositModal").addEventListener("click", (e) => {
-        if (e.target === document.getElementById("depositModal"))
-          closeDeposit();
-      });
       document
         .getElementById("withdrawModal")
         .addEventListener("click", (e) => {
@@ -1921,10 +2601,14 @@
         });
       document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") {
-          closeDeposit();
           closeWithdraw();
+          closeSidebar();
         }
       });
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("tab") === "billing") {
+        document.addEventListener("DOMContentLoaded", () => showTab("billing"));
+      }
 
       init();
     </script>
