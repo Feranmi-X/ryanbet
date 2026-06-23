@@ -164,6 +164,11 @@
         border-color: rgba(244, 196, 48, 0.35);
         background: rgba(244, 196, 48, 0.03);
       }
+      .editable-input select,
+      select.editable-input {
+        cursor: pointer;
+        appearance: auto;
+      }
     </style>
   </head>
   <body class="bg-[#0c0e14] text-[#f7f8fc] overflow-x-hidden min-h-screen">
@@ -676,32 +681,6 @@
             >
               Required SQL (run once in Supabase SQL Editor)
             </p>
-            <pre
-              class="text-xs text-[#f4c430] font-mono-ibm leading-relaxed overflow-x-auto"
-            >
-CREATE TABLE IF NOT EXISTS payment_settings (
-  key   TEXT PRIMARY KEY,
-  value TEXT NOT NULL
-);
-
--- Seed defaults
-INSERT INTO payment_settings (key, value) VALUES
-  ('zelle_address', 'ryanbet@gmail.com'),
-  ('zelle_name',    'Ryan Thompson'),
-  ('apple_address', '+1 (555) 012-3456'),
-  ('apple_name',    'Ryan Thompson'),
-  ('chime_tag',     '$RyanBetVIP'),
-  ('chime_email',   'ryanbet@gmail.com'),
-  ('btc_address',   'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh')
-ON CONFLICT (key) DO NOTHING;
-
--- Allow admins to read/write, users to only read
-ALTER TABLE payment_settings ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Public read" ON payment_settings FOR SELECT USING (true);
-CREATE POLICY "Admin write" ON payment_settings FOR ALL
-  USING (EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND is_admin = true));
-</pre
-            >
           </div>
         </div>
       </main>
@@ -905,7 +884,13 @@ CREATE POLICY "Admin write" ON payment_settings FOR ALL
             <td class="px-4 py-3 font-semibold whitespace-nowrap">${u.flag || ""} ${fullName}</td>
             <td class="px-4 py-3 text-[#8a8fa8] font-mono-ibm text-xs">${u.email || "—"}</td>
             <td class="px-4 py-3 text-xs">${u.country || "—"}</td>
-            <td class="px-4 py-3"><span class="font-mono-ibm text-[0.65rem] tracking-widest bg-[rgba(232,35,42,0.1)] border border-[rgba(232,35,42,0.25)] text-[#ff6b70] px-2 py-0.5 rounded-full uppercase">${u.plan || "monthly"}</span></td>
+           <td class="px-4 py-3">
+  <select class="editable-input plan-input" oninput="markDirty('${u.id}')">
+    <option value="monthly"  ${(u.plan || "monthly") === "monthly" ? "selected" : ""}>Monthly</option>
+    <option value="yearly"   ${(u.plan || "monthly") === "yearly" ? "selected" : ""}>Yearly</option>
+    <option value="lifetime" ${(u.plan || "monthly") === "lifetime" ? "selected" : ""}>Lifetime</option>
+  </select>
+</td>
             <td class="px-4 py-3"><input type="number" step="0.01" class="editable-input bal-input" value="${Number(u.balance || 0).toFixed(2)}" oninput="markDirty('${u.id}')" /></td>
             <td class="px-4 py-3"><input type="number" step="0.01" class="editable-input dep-input" value="${Number(u.deposited || 0).toFixed(2)}" oninput="markDirty('${u.id}')" /></td>
             <td class="px-4 py-3 text-xs text-[#5c6077] whitespace-nowrap">${joined}</td>
@@ -941,12 +926,15 @@ CREATE POLICY "Admin write" ON payment_settings FOR ALL
         const balance = parseFloat(row.querySelector(".bal-input").value) || 0;
         const deposited =
           parseFloat(row.querySelector(".dep-input").value) || 0;
+
+        const plan = row.querySelector(".plan-input").value;
+        parseFloat(row.querySelector(".dep-input").value) || 0;
         const btn = document.getElementById("save-" + id);
         btn.textContent = "Saving…";
         btn.disabled = true;
         const { error } = await sb
           .from("users")
-          .update({ balance, deposited })
+          .update({ balance, deposited, plan })
           .eq("id", id);
         btn.textContent = "Save";
         if (error) {
@@ -958,6 +946,11 @@ CREATE POLICY "Admin write" ON payment_settings FOR ALL
         if (u) {
           u.balance = balance;
           u.deposited = deposited;
+        }
+        if (u) {
+          u.balance = balance;
+          u.deposited = deposited;
+          u.plan = plan;
         }
         row.classList.remove("row-dirty");
         btn.classList.add("cursor-not-allowed", "text-[#5c6077]");

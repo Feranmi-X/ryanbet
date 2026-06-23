@@ -224,51 +224,63 @@ window.handleLogin = handleLogin;
 // ============================================================
 // SIGNUP HANDLER
 // ============================================================
- async function handlePlanClick(plan) {
-  const { data: { session } } = await sb.auth.getSession();
+async function handleSignup() {
+  const firstName = document.getElementById("signupFirstName").value.trim();
+  const lastName  = document.getElementById("signupLastName").value.trim();
+  const email     = document.getElementById("signupEmail").value.trim();
+  const countryEl = document.getElementById("signupCountry");
+  const pass      = document.getElementById("signupPass").value;
+  const errEl     = document.getElementById("signupError");
 
-  if (!session) {
-    // Not logged in — show sign-in prompt
-    showPlanSignInPrompt(plan);
-    return;}
+  if (!firstName)                     { showError(errEl, "Please enter your first name."); return; }
+  if (!lastName)                      { showError(errEl, "Please enter your last name."); return; }
+  if (!email || !email.includes("@")) { showError(errEl, "Please enter a valid email address."); return; }
+  if (!countryEl.value)               { showError(errEl, "Please select your country."); return; }
+  if (!pass || pass.length < 8)       { showError(errEl, "Password must be at least 8 characters."); return; }
 
-  // Logged in — go to dashboard billing tab
-  // Store chosen plan so billing tab can highlight it
-  sessionStorage.setItem("selectedPlan", plan);
-  window.location.href = "dashboard.html?tab=billing";
+  const selectedOption = countryEl.options[countryEl.selectedIndex];
+  const flag = selectedOption ? selectedOption.text.split(" ")[0] : "🌍";
+
+  const btn = document.querySelector("#signupForm button[onclick='handleSignup()']");
+  if (btn) { btn.textContent = "Creating account…"; btn.disabled = true; }
+
+  const { data, error } = await sb.auth.signUp({
+    email,
+    password: pass,
+    options: { data: { first_name: firstName, last_name: lastName } },
+  });
+
+  if (btn) { btn.textContent = "Create Account"; btn.disabled = false; }
+
+  if (error) {
+    showError(errEl, error.message);
+    return;
+  }
+
+  if (data.user) {
+    const { error: insertError } = await sb.from("users").insert({
+      id:         data.user.id,
+      first_name: firstName,
+      last_name:  lastName,
+      country:    countryEl.value,
+      flag,
+      plan:       "monthly",
+      balance:    0,
+      deposited:  0,
+    });
+    if (insertError) console.warn("Profile insert warning:", insertError.message);
+  }
+
+  setNavFlag(flag);
+  closeModal();
+
+  if (data.session) {
+    setTimeout(() => { window.location.href = "dashboard.html"; }, 200);
+  } else {
+    alert("✅ Account created! Please check your email to confirm your account, then log in.");
+  }
 }
-window.handlePlanClick = handlePlanClick;
-
-function showPlanSignInPrompt(plan) {
-  const label = plan.charAt(0).toUpperCase() + plan.slice(1);
-
-  // Inject a one-time banner above the modal   const banner = document.createElement("div");
-  banner.id = "planBanner";
-  banner.style.cssText = `
-    background: rgba(232,35,42,0.1);
-    border: 1px solid rgba(232,35,42,0.35);
-    color: #ff6b70;
-    font-size: 0.82rem;
-    font-weight: 700;
-    padding: 10px 16px;
-    border-radius: 12px;
-    margin-bottom: 16px;
-    text-align: center;
-    letter-spacing: 0.02em; `;
-  banner.textContent =
-    `Create a free account or log in to get started with the ${label} plan.`;
-
-  const existing = document.getElementById("planBanner");
-  if (existing) existing.remove();
-
-  const modalBox = document.querySelector(".modal-box");
-  if (modalBox) {
-    // Insert banner at top of modal content, below the close button
-    const firstChild = modalBox.querySelector("#modalSub");
-    if (firstChild) firstChild.before(banner);
-  }  sessionStorage.setItem("selectedPlan", plan);
-  openModal("signup");
-}
+window.handleSignup = handleSignup;
 
 // ============================================================
 // LOGOUT
