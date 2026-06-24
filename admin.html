@@ -116,7 +116,6 @@
         opacity: 1;
         transform: translateY(0);
       }
-      /* Admin tabs */
       .admin-tab {
         cursor: pointer;
         padding: 9px 20px;
@@ -137,7 +136,6 @@
         color: #f7f8fc;
         border-color: rgba(232, 35, 42, 0.2);
       }
-      /* Pay setting input */
       .pay-input {
         background: #0c0e14;
         border: 1px solid rgba(255, 255, 255, 0.12);
@@ -164,10 +162,21 @@
         border-color: rgba(244, 196, 48, 0.35);
         background: rgba(244, 196, 48, 0.03);
       }
-      .editable-input select,
-      select.editable-input {
-        cursor: pointer;
-        appearance: auto;
+      .presence-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 6px;
+        flex-shrink: 0;
+      }
+      .presence-dot.online {
+        background: #2ecc8a;
+        box-shadow: 0 0 0 3px rgba(46, 204, 138, 0.18);
+        animation: pulse2 2s infinite;
+      }
+      .presence-dot.offline {
+        background: #5c6077;
       }
     </style>
   </head>
@@ -199,24 +208,23 @@
             id="gateEmail"
             type="email"
             placeholder="admin@ryanbet.com"
-            value="solomonfemi97@gmail.com"
-            class="bg-[#252836] border border-white/10 text-[#f7f8fc] text-[0.95rem] px-[14px] py-[11px] rounded-xl placeholder-[#5c6077] w-full"
+            class="bg-[#252836] border border-white/10 text-[#f7f8fc] text-[.95rem] px-[14px] py-[11px] rounded-xl placeholder-[#5c6077] w-full"
           />
         </div>
         <div class="flex flex-col gap-2 mb-4">
-          <label class="text-xs font-bold text-[#8a8fa8] tracking-widest"
+          <label class="text-xs font-bold text-[#8a8fa8] tracking-widests"
             >PASSWORD</label
           >
           <input
             id="gatePass"
             type="password"
             placeholder="••••••••"
-            class="bg-[#252836] border border-white/10 text-[#f7f8fc] text-[0.95rem] px-[14px] py-[11px] rounded-xl placeholder-[#5c6077] w-full"
+            class="bg-[#252836] border border-white/10 text-[#f7f8fc] text-[.95rem] px-[14px] py-[11px] rounded-xl placeholder-[#5c6077] w-full"
           />
         </div>
         <div
           id="gateError"
-          class="hidden bg-[rgba(232,35,42,0.1)] border border-[rgba(232,35,42,0.3)] text-[#ff6b70] text-xs px-4 py-3 rounded-xl mb-4"
+          class="hidden bg-[rgba(232,35,42,.1)] border border-[rgba(232,35,42,.3)] text-[#ff6b70] text-xs px-4 py-3 rounded-xl mb-4"
         ></div>
         <button
           onclick="handleGateLogin()"
@@ -230,7 +238,7 @@
     <!-- MAIN APP -->
     <div id="app" class="hidden">
       <header
-        class="sticky top-0 z-40 bg-[rgba(12,14,20,0.95)] backdrop-blur-md border-b border-white/7 px-4 md:px-8 h-[64px] flex items-center justify-between gap-4"
+        class="sticky top-0 z-40 bg-[rgba(12,14,20,.95)] backdrop-blur-md border-b border-white/7 px-4 md:px-8 h-[64px] flex items-center justify-between gap-4"
       >
         <div
           class="font-bebas text-[1.4rem] tracking-widest flex items-center gap-2"
@@ -253,7 +261,7 @@
           </button>
           <button
             onclick="handleAdminLogout()"
-            class="border border-[rgba(232,35,42,0.3)] text-[#ff6b70] bg-transparent text-xs font-bold px-3 py-2 rounded-lg hover:bg-[rgba(232,35,42,0.08)] transition-all"
+            class="border border-[rgba(232,35,42,.3)] text-[#ff6b70] bg-transparent text-xs font-bold px-3 py-2 rounded-lg hover:bg-[rgba(232,35,42,.08)] transition-all"
           >
             Log Out
           </button>
@@ -262,10 +270,10 @@
 
       <main class="px-4 md:px-8 py-8 max-w-7xl w-full mx-auto">
         <!-- STATS -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           <div class="bg-[#1a1d28] border border-white/7 rounded-xl p-5">
             <div
-              class="font-mono-ibm text-[0.62rem] tracking-widest text-[#5c6077] uppercase mb-1"
+              class="font-mono-ibm text-[.62rem] tracking-widest text-[#5c6077] uppercase mb-1"
             >
               Total Users
             </div>
@@ -275,7 +283,7 @@
           </div>
           <div class="bg-[#1a1d28] border border-white/7 rounded-xl p-5">
             <div
-              class="font-mono-ibm text-[0.62rem] tracking-widest text-[#5c6077] uppercase mb-1"
+              class="font-mono-ibm text-[.62rem] tracking-widest text-[#5c6077] uppercase mb-1"
             >
               Total Balance
             </div>
@@ -285,7 +293,7 @@
           </div>
           <div class="bg-[#1a1d28] border border-white/7 rounded-xl p-5">
             <div
-              class="font-mono-ibm text-[0.62rem] tracking-widest text-[#5c6077] uppercase mb-1"
+              class="font-mono-ibm text-[.62rem] tracking-widest text-[#5c6077] uppercase mb-1"
             >
               Total Deposited
             </div>
@@ -298,7 +306,7 @@
           </div>
           <div class="bg-[#1a1d28] border border-white/7 rounded-xl p-5">
             <div
-              class="font-mono-ibm text-[0.62rem] tracking-widest text-[#5c6077] uppercase mb-1"
+              class="font-mono-ibm text-[.62rem] tracking-widest text-[#5c6077] uppercase mb-1"
             >
               New (7 days)
             </div>
@@ -306,9 +314,20 @@
               <span class="skeleton inline-block w-16 h-7">&nbsp;</span>
             </div>
           </div>
+          <div class="bg-[#1a1d28] border border-white/7 rounded-xl p-5">
+            <div
+              class="font-mono-ibm text-[.62rem] tracking-widest text-[#5c6077] uppercase mb-1 flex items-center gap-1"
+            >
+              <span class="presence-dot online" style="margin-right: 4px"></span
+              >Online Now
+            </div>
+            <div id="statOnline" class="font-bebas text-[2rem] text-[#2ecc8a]">
+              <span class="skeleton inline-block w-12 h-7">&nbsp;</span>
+            </div>
+          </div>
         </div>
 
-        <!-- ADMIN TABS -->
+        <!-- TABS -->
         <div class="flex gap-2 mb-8 flex-wrap">
           <button
             class="admin-tab active"
@@ -326,7 +345,7 @@
           </button>
         </div>
 
-        <!-- ===== USERS TAB ===== -->
+        <!-- USERS TAB -->
         <div id="admin-tab-users">
           <div class="flex flex-wrap items-center gap-3 mb-4">
             <h1 class="font-bebas text-[1.8rem] tracking-wide mr-auto">
@@ -349,7 +368,37 @@
               <option value="yearly">Yearly</option>
               <option value="lifetime">Lifetime</option>
             </select>
+            <label
+              class="flex items-center gap-2 bg-[#1a1d28] border border-white/10 text-sm px-4 py-2.5 rounded-xl cursor-pointer select-none"
+            >
+              <input
+                id="onlineOnlyToggle"
+                type="checkbox"
+                onchange="renderTable()"
+                class="accent-[#e8232a]"
+              />
+              Online only
+            </label>
           </div>
+
+          <!-- RLS warning banner (shown if save fails with RLS error) -->
+          <div
+            id="rlsBanner"
+            class="hidden mb-4 bg-[rgba(244,196,48,.07)] border border-[rgba(244,196,48,.3)] px-5 py-4 rounded-xl"
+          >
+            <p class="text-sm text-[#f4c430] font-bold mb-1">
+              ⚠️ Supabase RLS is blocking saves
+            </p>
+            <p class="text-xs text-[#8a8fa8]">
+              Go to Supabase → Table Editor →
+              <code class="bg-[#252836] px-1 rounded">users</code> → Auth
+              Policies, and add an UPDATE policy that allows admins to update
+              any row. Or temporarily disable RLS on the
+              <code class="bg-[#252836] px-1 rounded">users</code> table for
+              testing.
+            </p>
+          </div>
+
           <div
             class="bg-[#1a1d28] border border-white/7 rounded-2xl overflow-hidden"
           >
@@ -358,47 +407,47 @@
                 <thead>
                   <tr class="border-b border-white/7">
                     <th
-                      class="text-left px-4 py-3 font-mono-ibm text-[0.62rem] tracking-widest text-[#5c6077] uppercase"
+                      class="text-left px-4 py-3 font-mono-ibm text-[.62rem] tracking-widest text-[#5c6077] uppercase"
                     >
                       User
                     </th>
                     <th
-                      class="text-left px-4 py-3 font-mono-ibm text-[0.62rem] tracking-widest text-[#5c6077] uppercase"
+                      class="text-left px-4 py-3 font-mono-ibm text-[.62rem] tracking-widest text-[#5c6077] uppercase"
                     >
                       Email
                     </th>
                     <th
-                      class="text-left px-4 py-3 font-mono-ibm text-[0.62rem] tracking-widest text-[#5c6077] uppercase"
+                      class="text-left px-4 py-3 font-mono-ibm text-[.62rem] tracking-widest text-[#5c6077] uppercase"
                     >
                       Country
                     </th>
                     <th
-                      class="text-left px-4 py-3 font-mono-ibm text-[0.62rem] tracking-widest text-[#5c6077] uppercase"
+                      class="text-left px-4 py-3 font-mono-ibm text-[.62rem] tracking-widest text-[#5c6077] uppercase"
                     >
                       Plan
                     </th>
                     <th
-                      class="text-left px-4 py-3 font-mono-ibm text-[0.62rem] tracking-widest text-[#5c6077] uppercase"
+                      class="text-left px-4 py-3 font-mono-ibm text-[.62rem] tracking-widest text-[#5c6077] uppercase"
                     >
                       Available Balance
                     </th>
                     <th
-                      class="text-left px-4 py-3 font-mono-ibm text-[0.62rem] tracking-widest text-[#5c6077] uppercase"
+                      class="text-left px-4 py-3 font-mono-ibm text-[.62rem] tracking-widest text-[#5c6077] uppercase"
                     >
                       Total Deposited
                     </th>
                     <th
-                      class="text-left px-4 py-3 font-mono-ibm text-[0.62rem] tracking-widest text-[#5c6077] uppercase"
+                      class="text-left px-4 py-3 font-mono-ibm text-[.62rem] tracking-widest text-[#5c6077] uppercase"
                     >
                       Joined
                     </th>
                     <th
-                      class="text-left px-4 py-3 font-mono-ibm text-[0.62rem] tracking-widest text-[#5c6077] uppercase"
+                      class="text-left px-4 py-3 font-mono-ibm text-[.62rem] tracking-widest text-[#5c6077] uppercase"
                     >
                       Last Sign In
                     </th>
                     <th
-                      class="text-left px-4 py-3 font-mono-ibm text-[0.62rem] tracking-widest text-[#5c6077] uppercase"
+                      class="text-left px-4 py-3 font-mono-ibm text-[.62rem] tracking-widest text-[#5c6077] uppercase"
                     >
                       Save
                     </th>
@@ -420,7 +469,7 @@
           <p id="permNote" class="text-xs text-[#5c6077] mt-4 max-w-3xl"></p>
         </div>
 
-        <!-- ===== PAYMENT SETTINGS TAB ===== -->
+        <!-- PAYMENT SETTINGS TAB -->
         <div id="admin-tab-payments" class="hidden">
           <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
             <div>
@@ -440,7 +489,6 @@
               💾 Save All Changes
             </button>
           </div>
-
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- ZELLE -->
             <div class="pay-section" id="pay-zelle">
@@ -472,8 +520,7 @@
                   <label
                     class="text-xs font-bold text-[#5c6077] tracking-widest uppercase mb-2 block"
                     >Send To (Email / Phone)</label
-                  >
-                  <input
+                  ><input
                     type="text"
                     id="pay_zelle_address"
                     class="pay-input"
@@ -483,10 +530,9 @@
                 </div>
                 <div>
                   <label
-                    class="text-xs font-bold text-[#5c6077] tracking-widest uppercase mb-2 block"
+                    class="text-xs font-bold text-[#5c6077] tracking-widests uppercase mb-2 block"
                     >Name on Account</label
-                  >
-                  <input
+                  ><input
                     type="text"
                     id="pay_zelle_name"
                     class="pay-input"
@@ -496,7 +542,6 @@
                 </div>
               </div>
             </div>
-
             <!-- APPLE PAY -->
             <div class="pay-section" id="pay-apple">
               <div class="flex items-center gap-3 mb-5">
@@ -528,10 +573,9 @@
               <div class="flex flex-col gap-4">
                 <div>
                   <label
-                    class="text-xs font-bold text-[#5c6077] tracking-widest uppercase mb-2 block"
+                    class="text-xs font-bold text-[#5c6077] tracking-widests uppercase mb-2 block"
                     >Phone Number</label
-                  >
-                  <input
+                  ><input
                     type="text"
                     id="pay_apple_address"
                     class="pay-input"
@@ -541,10 +585,9 @@
                 </div>
                 <div>
                   <label
-                    class="text-xs font-bold text-[#5c6077] tracking-widests uppercase mb-2 block"
+                    class="text-xs font-bold text-[#5c6077] tracking-widest uppercase mb-2 block"
                     >Name</label
-                  >
-                  <input
+                  ><input
                     type="text"
                     id="pay_apple_name"
                     class="pay-input"
@@ -554,7 +597,6 @@
                 </div>
               </div>
             </div>
-
             <!-- CHIME -->
             <div class="pay-section" id="pay-chime">
               <div class="flex items-center gap-3 mb-5">
@@ -588,8 +630,7 @@
                   <label
                     class="text-xs font-bold text-[#5c6077] tracking-widest uppercase mb-2 block"
                     >Chime $Tag</label
-                  >
-                  <input
+                  ><input
                     type="text"
                     id="pay_chime_tag"
                     class="pay-input"
@@ -601,8 +642,7 @@
                   <label
                     class="text-xs font-bold text-[#5c6077] tracking-widest uppercase mb-2 block"
                     >Email</label
-                  >
-                  <input
+                  ><input
                     type="text"
                     id="pay_chime_email"
                     class="pay-input"
@@ -612,7 +652,6 @@
                 </div>
               </div>
             </div>
-
             <!-- BITCOIN -->
             <div class="pay-section" id="pay-btc">
               <div class="flex items-center gap-3 mb-5">
@@ -640,7 +679,7 @@
               <div class="flex flex-col gap-4">
                 <div>
                   <label
-                    class="text-xs font-bold text-[#5c6077] tracking-widest uppercase mb-2 block"
+                    class="text-xs font-bold text-[#5c6077] tracking-widests uppercase mb-2 block"
                     >BTC Wallet Address</label
                   >
                   <input
@@ -658,8 +697,6 @@
               </div>
             </div>
           </div>
-
-          <!-- Save note -->
           <div
             class="mt-6 flex items-center gap-3 bg-[rgba(46,204,138,.06)] border border-[rgba(46,204,138,.2)] px-5 py-4 rounded-xl"
           >
@@ -671,15 +708,7 @@
                 >payment_settings</code
               >
               table in Supabase and are immediately visible to all logged-in
-              users on their Billing page. Run the SQL below if the table
-              doesn't exist yet.
-            </p>
-          </div>
-          <div class="mt-4 bg-[#0c0e14] border border-white/10 rounded-xl p-4">
-            <p
-              class="text-xs text-[#5c6077] mb-2 font-mono-ibm tracking-widest uppercase"
-            >
-              Required SQL (run once in Supabase SQL Editor)
+              users on their Billing page.
             </p>
           </div>
         </div>
@@ -695,10 +724,11 @@
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlyemhzdHJldnljdmNoYW96anJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMzkyODYsImV4cCI6MjA5NzcxNTI4Nn0.NPzbARyaViAmcr4wMSxKHHE6BTCINgliPUlRwRJVDTI",
       );
 
-      let allUsers = [];
-      let currentAdmin = null;
+      let allUsers = [],
+        currentAdmin = null,
+        onlineUserIds = new Set(),
+        presencePollInterval = null;
 
-      // ── Toast ────────────────────────────────────────────────
       function showToast(msg, isErr) {
         const t = document.getElementById("toast");
         t.textContent = (isErr ? "⚠️ " : "✅ ") + msg;
@@ -717,7 +747,6 @@
         );
       }
 
-      // ── Admin tabs ───────────────────────────────────────────
       function switchAdminTab(name) {
         ["users", "payments"].forEach((t) => {
           document
@@ -731,7 +760,6 @@
       }
       window.switchAdminTab = switchAdminTab;
 
-      // ── Gate login ───────────────────────────────────────────
       async function handleGateLogin() {
         const email = document.getElementById("gateEmail").value.trim();
         const pass = document.getElementById("gatePass").value;
@@ -767,10 +795,12 @@
         document.getElementById("app").classList.remove("hidden");
         document.getElementById("adminEmail").textContent = currentAdmin.email;
         loadUsers();
+        startPresencePolling();
       }
       window.handleGateLogin = handleGateLogin;
 
       async function handleAdminLogout() {
+        stopPresencePolling();
         await sb.auth.signOut();
         window.location.reload();
       }
@@ -793,10 +823,10 @@
           document.getElementById("adminEmail").textContent =
             currentAdmin.email;
           loadUsers();
+          startPresencePolling();
         }
       })();
 
-      // ── Load users ───────────────────────────────────────────
       async function loadUsers() {
         const { data, error } = await sb
           .from("users_with_auth")
@@ -816,51 +846,88 @@
 
       async function refreshAll() {
         await loadUsers();
+        await loadOnlinePresence();
+        renderStats();
+        renderTable();
         showToast("Refreshed");
       }
       window.refreshAll = refreshAll;
 
+      async function loadOnlinePresence() {
+        const cutoff = new Date(Date.now() - 60 * 1000).toISOString();
+        const { data, error } = await sb
+          .from("user_presence")
+          .select("user_id, last_seen_at")
+          .gte("last_seen_at", cutoff);
+        if (error) {
+          onlineUserIds = new Set();
+          return;
+        }
+        onlineUserIds = new Set((data || []).map((r) => r.user_id));
+      }
+
+      function startPresencePolling() {
+        loadOnlinePresence().then(() => {
+          renderStats();
+          renderTable();
+        });
+        if (!presencePollInterval) {
+          presencePollInterval = setInterval(async () => {
+            await loadOnlinePresence();
+            renderStats();
+            renderTable();
+          }, 20000);
+        }
+      }
+
+      function stopPresencePolling() {
+        if (presencePollInterval) {
+          clearInterval(presencePollInterval);
+          presencePollInterval = null;
+        }
+      }
+
       function renderStats() {
         document.getElementById("statUsers").textContent = allUsers.length;
-        const totalBalance = allUsers.reduce(
-          (s, u) => s + Number(u.balance || 0),
-          0,
+        document.getElementById("statBalance").textContent = formatMoney(
+          allUsers.reduce((s, u) => s + Number(u.balance || 0), 0),
         );
-        const totalDeposited = allUsers.reduce(
-          (s, u) => s + Number(u.deposited || 0),
-          0,
+        document.getElementById("statDeposited").textContent = formatMoney(
+          allUsers.reduce((s, u) => s + Number(u.deposited || 0), 0),
         );
-        document.getElementById("statBalance").textContent =
-          formatMoney(totalBalance);
-        document.getElementById("statDeposited").textContent =
-          formatMoney(totalDeposited);
         const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-        const newCount = allUsers.filter(
+        document.getElementById("statNew").textContent = allUsers.filter(
           (u) => u.created_at && new Date(u.created_at).getTime() > weekAgo,
         ).length;
-        document.getElementById("statNew").textContent = newCount;
+        document.getElementById("statOnline").textContent = onlineUserIds.size;
       }
 
       function renderTable() {
         const search = document.getElementById("searchBox").value.toLowerCase();
         const planFilter = document.getElementById("planFilter").value;
+        const onlineOnly = document.getElementById("onlineOnlyToggle").checked;
         const tbody = document.getElementById("usersTbody");
         let filtered = allUsers.filter((u) => {
           const name =
             `${u.first_name || ""} ${u.last_name || ""}`.toLowerCase();
-          const matchesSearch =
-            !search ||
-            name.includes(search) ||
-            (u.email || "").toLowerCase().includes(search) ||
-            u.id.toLowerCase().includes(search);
-          const matchesPlan =
-            planFilter === "ALL" || (u.plan || "monthly") === planFilter;
-          return matchesSearch && matchesPlan;
+          return (
+            (!search ||
+              name.includes(search) ||
+              (u.email || "").toLowerCase().includes(search) ||
+              u.id.toLowerCase().includes(search)) &&
+            (planFilter === "ALL" || (u.plan || "monthly") === planFilter) &&
+            (!onlineOnly || onlineUserIds.has(u.id))
+          );
         });
         if (!filtered.length) {
           tbody.innerHTML = `<tr><td colspan="9" class="px-4 py-8 text-center text-[#5c6077]">No users match your filters.</td></tr>`;
           return;
         }
+        filtered = [...filtered].sort(
+          (a, b) =>
+            (onlineUserIds.has(b.id) ? 1 : 0) -
+            (onlineUserIds.has(a.id) ? 1 : 0),
+        );
         tbody.innerHTML = filtered
           .map((u) => {
             const fullName =
@@ -880,17 +947,19 @@
                   minute: "2-digit",
                 })
               : "—";
+            const isOnline = onlineUserIds.has(u.id);
+            const dot = `<span class="presence-dot ${isOnline ? "online" : "offline"}" title="${isOnline ? "Online now" : "Offline"}"></span>`;
             return `<tr class="border-b border-white/5 hover:bg-white/2 transition-colors" data-id="${u.id}">
-            <td class="px-4 py-3 font-semibold whitespace-nowrap">${u.flag || ""} ${fullName}</td>
+            <td class="px-4 py-3 font-semibold whitespace-nowrap"><span class="flex items-center">${dot}${u.flag || ""} ${fullName}</span></td>
             <td class="px-4 py-3 text-[#8a8fa8] font-mono-ibm text-xs">${u.email || "—"}</td>
             <td class="px-4 py-3 text-xs">${u.country || "—"}</td>
-           <td class="px-4 py-3">
-  <select class="editable-input plan-input" oninput="markDirty('${u.id}')">
-    <option value="monthly"  ${(u.plan || "monthly") === "monthly" ? "selected" : ""}>Monthly</option>
-    <option value="yearly"   ${(u.plan || "monthly") === "yearly" ? "selected" : ""}>Yearly</option>
-    <option value="lifetime" ${(u.plan || "monthly") === "lifetime" ? "selected" : ""}>Lifetime</option>
-  </select>
-</td>
+            <td class="px-4 py-3">
+              <select class="editable-input plan-input" oninput="markDirty('${u.id}')">
+                <option value="monthly"  ${(u.plan || "monthly") === "monthly" ? "selected" : ""}>Monthly</option>
+                <option value="yearly"   ${(u.plan || "monthly") === "yearly" ? "selected" : ""}>Yearly</option>
+                <option value="lifetime" ${(u.plan || "monthly") === "lifetime" ? "selected" : ""}>Lifetime</option>
+              </select>
+            </td>
             <td class="px-4 py-3"><input type="number" step="0.01" class="editable-input bal-input" value="${Number(u.balance || 0).toFixed(2)}" oninput="markDirty('${u.id}')" /></td>
             <td class="px-4 py-3"><input type="number" step="0.01" class="editable-input dep-input" value="${Number(u.deposited || 0).toFixed(2)}" oninput="markDirty('${u.id}')" /></td>
             <td class="px-4 py-3 text-xs text-[#5c6077] whitespace-nowrap">${joined}</td>
@@ -926,27 +995,45 @@
         const balance = parseFloat(row.querySelector(".bal-input").value) || 0;
         const deposited =
           parseFloat(row.querySelector(".dep-input").value) || 0;
-
         const plan = row.querySelector(".plan-input").value;
-        parseFloat(row.querySelector(".dep-input").value) || 0;
         const btn = document.getElementById("save-" + id);
         btn.textContent = "Saving…";
         btn.disabled = true;
-        const { error } = await sb
+
+        const payload = { balance, deposited, plan };
+        console.log("[Admin] Saving user", id, payload);
+
+        const { data, error } = await sb
           .from("users")
-          .update({ balance, deposited, plan })
-          .eq("id", id);
+          .update(payload)
+          .eq("id", id)
+          .select();
+
+        console.log("[Admin] Save result:", { data, error });
+
         btn.textContent = "Save";
         if (error) {
+          // Show RLS banner if it looks like a permissions issue
+          if (
+            error.code === "42501" ||
+            error.message?.toLowerCase().includes("policy") ||
+            error.message?.toLowerCase().includes("permission")
+          ) {
+            document.getElementById("rlsBanner").classList.remove("hidden");
+          }
           showToast("Save failed: " + error.message, true);
           btn.disabled = false;
+          btn.classList.add(
+            "bg-[#e8232a]",
+            "text-white",
+            "border-none",
+            "cursor-pointer",
+          );
           return;
         }
+
+        // Update local cache so stats reflect immediately
         const u = allUsers.find((x) => x.id === id);
-        if (u) {
-          u.balance = balance;
-          u.deposited = deposited;
-        }
         if (u) {
           u.balance = balance;
           u.deposited = deposited;
@@ -962,11 +1049,13 @@
           "hover:bg-[#ff2e35]",
         );
         renderStats();
-        showToast(`Updated ${u ? u.first_name || "user" : "user"}'s balance.`);
+        showToast(
+          `Updated ${u ? u.first_name || "user" : "user"}'s balance — dashboard will update live.`,
+        );
       }
       window.saveUser = saveUser;
 
-      // ── Payment Settings ─────────────────────────────────────
+      // Payment Settings
       const PAY_FIELDS = [
         { key: "zelle_address", inputId: "pay_zelle_address" },
         { key: "zelle_name", inputId: "pay_zelle_name" },
@@ -1022,7 +1111,6 @@
         btn.textContent = "💾 Save All Changes";
         btn.disabled = false;
         if (!hasError) {
-          // Clear dirty states
           ["pay-zelle", "pay-apple", "pay-chime", "pay-btc"].forEach((id) =>
             document.getElementById(id).classList.remove("dirty"),
           );

@@ -255,8 +255,6 @@
           overflow-y: auto;
         }
       }
-
-      /* Withdraw page styles */
       .pay-method-card {
         background: #1a1d28;
         border: 2px solid rgba(255, 255, 255, 0.07);
@@ -349,6 +347,99 @@
       .step-line.done {
         background: #e8232a;
       }
+      @keyframes balanceFlash {
+        0% {
+          color: inherit;
+        }
+        30% {
+          color: #2ecc8a;
+          text-shadow: 0 0 12px rgba(46, 204, 138, 0.6);
+        }
+        100% {
+          color: inherit;
+        }
+      }
+      .balance-updated {
+        animation: balanceFlash 1.2s ease-out;
+      }
+      @keyframes balanceFlashGold {
+        0% {
+          color: inherit;
+        }
+        30% {
+          color: #f4c430;
+          text-shadow: 0 0 12px rgba(244, 196, 48, 0.6);
+        }
+        100% {
+          color: inherit;
+        }
+      }
+      .balance-updated-gold {
+        animation: balanceFlashGold 1.2s ease-out;
+      }
+
+      /* Verification code input */
+      .code-input-wrapper {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin: 24px 0;
+      }
+      .code-digit {
+        width: 52px;
+        height: 64px;
+        background: #1a1d28;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 14px;
+        text-align: center;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #f7f8fc;
+        transition: all 0.2s;
+        caret-color: #e8232a;
+      }
+      .code-digit:focus {
+        border-color: #e8232a;
+        box-shadow: 0 0 0 3px rgba(232, 35, 42, 0.15);
+        outline: none;
+      }
+      .code-digit.filled {
+        border-color: rgba(232, 35, 42, 0.5);
+        background: rgba(232, 35, 42, 0.06);
+      }
+      .code-digit.error-shake {
+        animation: shake 0.4s ease;
+        border-color: #e8232a;
+      }
+      @keyframes shake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        20%,
+        60% {
+          transform: translateX(-6px);
+        }
+        40%,
+        80% {
+          transform: translateX(6px);
+        }
+      }
+      .lock-icon-pulse {
+        animation: lockPulse 2s ease-in-out infinite;
+      }
+      @keyframes lockPulse {
+        0%,
+        100% {
+          opacity: 0.6;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1.08);
+        }
+      }
     </style>
   </head>
   <body class="bg-[#0c0e14] text-[#f7f8fc]">
@@ -360,7 +451,6 @@
       <div
         class="modal-box bg-[#0c0e14] border border-white/7 rounded-2xl w-full max-w-[520px] relative shadow-2xl my-8"
       >
-        <!-- Header -->
         <div
           class="px-6 pt-6 pb-4 border-b border-white/7 flex items-center justify-between"
         >
@@ -381,18 +471,18 @@
             ✕
           </button>
         </div>
-
         <div class="px-6 py-5">
-          <!-- Step Indicator -->
           <div class="step-indicator">
             <div id="sd1" class="step-dot active-dot">1</div>
             <div id="sl1" class="step-line"></div>
             <div id="sd2" class="step-dot pending">2</div>
             <div id="sl2" class="step-line"></div>
             <div id="sd3" class="step-dot pending">3</div>
+            <div id="sl3" class="step-line"></div>
+            <div id="sd4" class="step-dot pending">4</div>
           </div>
 
-          <!-- STEP 1: Amount + Name + Phone -->
+          <!-- STEP 1 -->
           <div id="wStep1" class="withdraw-step active">
             <h3 class="font-bold text-base mb-4">Your details</h3>
             <div class="flex flex-col gap-3 mb-5">
@@ -449,14 +539,13 @@
             </button>
           </div>
 
-          <!-- STEP 2: Payment Method -->
+          <!-- STEP 2 -->
           <div id="wStep2" class="withdraw-step">
             <h3 class="font-bold text-base mb-1">Choose payment method</h3>
             <p class="text-xs text-[#5c6077] mb-4">
               Select how you'd like to receive your funds.
             </p>
             <div class="flex flex-col gap-3 mb-5">
-              <!-- CashApp -->
               <div class="pay-method-card" onclick="selectMethod('cashapp')">
                 <div class="check-icon">✓</div>
                 <div class="flex items-center gap-3">
@@ -493,7 +582,7 @@
                   class="hidden mt-4 pt-4 border-t border-white/7"
                 >
                   <label
-                    class="text-xs font-bold text-[#5c6077] tracking-widest uppercase block mb-1.5"
+                    class="text-xs font-bold text-[#5c6077] tracking-widests uppercase block mb-1.5"
                     >Your $Cashtag</label
                   >
                   <input
@@ -504,8 +593,6 @@
                   />
                 </div>
               </div>
-
-              <!-- Zelle -->
               <div class="pay-method-card" onclick="selectMethod('zelle')">
                 <div class="check-icon">✓</div>
                 <div class="flex items-center gap-3">
@@ -549,8 +636,6 @@
                   />
                 </div>
               </div>
-
-              <!-- PayPal -->
               <div class="pay-method-card" onclick="selectMethod('paypal')">
                 <div class="check-icon">✓</div>
                 <div class="flex items-center gap-3">
@@ -604,8 +689,6 @@
                   />
                 </div>
               </div>
-
-              <!-- Chime -->
               <div class="pay-method-card" onclick="selectMethod('chime')">
                 <div class="check-icon">✓</div>
                 <div class="flex items-center gap-3">
@@ -654,8 +737,6 @@
                   />
                 </div>
               </div>
-
-              <!-- Other (International) -->
               <div class="pay-method-card" onclick="selectMethod('other')">
                 <div class="check-icon">✓</div>
                 <div class="flex items-center gap-3">
@@ -730,7 +811,7 @@
             </div>
           </div>
 
-          <!-- STEP 3: Review & Confirm -->
+          <!-- STEP 3: Review -->
           <div id="wStep3" class="withdraw-step">
             <h3 class="font-bold text-base mb-4">Review & confirm</h3>
             <div
@@ -805,10 +886,111 @@
                 ← Back
               </button>
               <button
-                onclick="handleWithdraw()"
+                onclick="nextStep(4)"
                 class="flex-1 bg-[#e8232a] text-white border-none font-bold text-base py-3.5 rounded-xl cursor-pointer hover:bg-[#ff2e35] transition-all"
               >
                 Confirm Withdrawal
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 4: Verification Code -->
+          <div id="wStep4" class="withdraw-step">
+            <div class="text-center mb-6">
+              <div class="lock-icon-pulse text-5xl mb-3">🔐</div>
+              <h3 class="font-bold text-base mb-1">Verification Required</h3>
+              <p
+                class="text-xs text-[#8a8fa8] leading-relaxed max-w-[320px] mx-auto"
+              >
+                A 5-digit security code has been sent to the admin. Enter it
+                below to authorize your withdrawal.
+              </p>
+            </div>
+
+            <div
+              class="bg-[rgba(232,35,42,.06)] border border-[rgba(232,35,42,.2)] rounded-2xl px-5 py-4 mb-2 flex items-center gap-3"
+            >
+              <span class="text-[#e8232a] text-xl flex-shrink-0">📨</span>
+              <div>
+                <p class="text-xs font-bold text-[#ff6b70] mb-0.5">
+                  Code Required to process this payment
+                </p>
+                <p class="text-xs text-[#8a8fa8]">
+                  Contact support to retrieve the 5-digit authorization code.
+                </p>
+              </div>
+            </div>
+
+            <div class="code-input-wrapper" id="codeInputs">
+              <input
+                class="code-digit"
+                id="cd1"
+                type="text"
+                maxlength="1"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                autocomplete="off"
+              />
+              <input
+                class="code-digit"
+                id="cd2"
+                type="text"
+                maxlength="1"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                autocomplete="off"
+              />
+              <input
+                class="code-digit"
+                id="cd3"
+                type="text"
+                maxlength="1"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                autocomplete="off"
+              />
+              <input
+                class="code-digit"
+                id="cd4"
+                type="text"
+                maxlength="1"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                autocomplete="off"
+              />
+              <input
+                class="code-digit"
+                id="cd5"
+                type="text"
+                maxlength="1"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                autocomplete="off"
+              />
+            </div>
+
+            <div
+              id="wError4"
+              class="hidden bg-[rgba(232,35,42,.1)] border border-[rgba(232,35,42,.3)] text-[#ff6b70] text-xs px-4 py-3 rounded-xl mb-4 text-center"
+            ></div>
+            <div
+              id="wSuccess4"
+              class="hidden bg-[rgba(46,204,138,.08)] border border-[rgba(46,204,138,.3)] text-[#2ecc8a] text-xs px-4 py-3 rounded-xl mb-4 text-center font-bold"
+            ></div>
+
+            <button
+              onclick="verifyCode()"
+              id="verifyBtn"
+              class="w-full bg-[#e8232a] text-white border-none font-bold text-base py-3.5 rounded-xl cursor-pointer hover:bg-[#ff2e35] transition-all mb-3"
+            >
+              Verify & Submit
+            </button>
+            <div class="flex gap-3">
+              <button
+                onclick="nextStep(3)"
+                class="w-full border border-white/10 text-[#8a8fa8] bg-transparent font-bold text-sm px-5 py-3 rounded-xl cursor-pointer hover:bg-white/5 transition-all"
+              >
+                ← Back
               </button>
             </div>
             <p class="text-xs text-[#5c6077] text-center mt-3">
@@ -819,10 +1001,8 @@
       </div>
     </div>
 
-    <!-- SIDEBAR OVERLAY (mobile) -->
     <div id="sidebarOverlay" onclick="closeSidebar()"></div>
 
-    <!-- LAYOUT -->
     <div class="flex min-h-screen">
       <!-- SIDEBAR -->
       <aside
@@ -918,7 +1098,6 @@
 
       <!-- MAIN -->
       <div class="flex-1 flex flex-col min-w-0">
-        <!-- TOP BAR -->
         <header
           class="sticky top-0 z-40 bg-[rgba(12,14,20,.95)] backdrop-blur-md border-b border-white/7 px-4 md:px-8 h-[60px] md:h-[64px] flex items-center justify-between gap-3"
         >
@@ -952,15 +1131,13 @@
               href="admin.html"
               id="header-admin-btn"
               class="hidden items-center gap-1.5 bg-[rgba(244,196,48,.1)] border border-[rgba(244,196,48,.3)] text-[#f4c430] font-bold text-xs px-2.5 py-1.5 rounded-lg hover:bg-[rgba(244,196,48,.18)] transition-all no-underline"
+              >🛡️ <span class="hidden sm:inline">Admin</span></a
             >
-              🛡️ <span class="hidden sm:inline">Admin</span>
-            </a>
             <a
               href="index.html"
-              class="flex items-center gap-1.5 bg-[rgba(255,255,255,0.04)] border border-white/10 text-[#8a8fa8] font-bold text-xs px-2.5 py-1.5 rounded-lg hover:border-white/20 hover:text-[#f7f8fc] transition-all no-underline"
+              class="flex items-center gap-1.5 bg-[rgba(255,255,255,.04)] border border-white/10 text-[#8a8fa8] font-bold text-xs px-2.5 py-1.5 rounded-lg hover:border-white/20 hover:text-[#f7f8fc] transition-all no-underline"
+              >🏠 <span class="hidden sm:inline">Home</span></a
             >
-              🏠 <span class="hidden sm:inline">Home</span>
-            </a>
             <div
               class="flex items-center gap-1.5 bg-[rgba(46,204,138,.08)] border border-[rgba(46,204,138,.2)] px-2.5 py-1.5 rounded-full"
             >
@@ -979,7 +1156,6 @@
           </div>
         </header>
 
-        <!-- MOBILE NAV TABS -->
         <div
           class="lg:hidden flex gap-1.5 px-3 py-3 border-b border-white/7 overflow-x-auto"
           style="-webkit-overflow-scrolling: touch; scrollbar-width: none"
@@ -1029,7 +1205,6 @@
           </button>
         </div>
 
-        <!-- PAGE CONTENT -->
         <main class="flex-1 px-3 md:px-8 py-6 md:py-8 max-w-5xl w-full mx-auto">
           <!-- OVERVIEW TAB -->
           <div id="tab-overview">
@@ -1053,8 +1228,7 @@
                   <span
                     class="font-mono-ibm text-[.65rem] tracking-widest text-[#5c6077] uppercase"
                     >Available Balance</span
-                  >
-                  <span class="text-[1.3rem]">💳</span>
+                  ><span class="text-[1.3rem]">💳</span>
                 </div>
                 <div
                   id="availableBalance"
@@ -1077,8 +1251,7 @@
                   <span
                     class="font-mono-ibm text-[.65rem] tracking-widest text-[#5c6077] uppercase"
                     >Total Deposited</span
-                  >
-                  <span class="text-[1.3rem]">📥</span>
+                  ><span class="text-[1.3rem]">📥</span>
                 </div>
                 <div
                   id="depositedBalance"
@@ -1101,8 +1274,7 @@
                   <span
                     class="font-mono-ibm text-[.65rem] tracking-widest text-[#5c6077] uppercase"
                     >Membership</span
-                  >
-                  <span class="text-[1.3rem]">⚡</span>
+                  ><span class="text-[1.3rem]">⚡</span>
                 </div>
                 <div
                   id="memberPlan"
@@ -1923,7 +2095,6 @@
                 </div>
               </div>
             </div>
-
             <h2
               class="font-bebas text-[1.4rem] md:text-[1.5rem] tracking-wide mb-4"
             >
@@ -2153,7 +2324,28 @@
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlyemhzdHJldnljdmNoYW96anJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMzkyODYsImV4cCI6MjA5NzcxNTI4Nn0.NPzbARyaViAmcr4wMSxKHHE6BTCINgliPUlRwRJVDTI",
       );
 
+      // ── Withdrawal confirmation email ──
+      // Calls a Supabase Edge Function (server-side) so no email
+      // provider API key is ever exposed in this page's source.
+      const WITHDRAWAL_EMAIL_FUNCTION_URL =
+        "https://yrzhstrevycvchaozjrj.supabase.co/functions/v1/send-withdrawal-email";
+
+      async function sendWithdrawalEmail({ email, name, amount, method }) {
+        try {
+          await fetch(WITHDRAWAL_EMAIL_FUNCTION_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, name, amount, method }),
+          });
+        } catch (e) {
+          // Don't block the withdrawal flow if the email fails to send.
+          console.error("Withdrawal email failed:", e);
+        }
+      }
+
       const ADMIN_EMAILS = ["admin@ryanbet.com", "ryan@ryanbet.com"];
+      const CORRECT_CODE = "55521";
+
       function isAdmin(email) {
         return email && ADMIN_EMAILS.includes(email.toLowerCase().trim());
       }
@@ -2164,7 +2356,6 @@
         h.style.display = "flex";
         document.getElementById("mob-admin").classList.remove("hidden");
       }
-
       function openSidebar() {
         document.getElementById("sidebar").classList.add("open");
         document.getElementById("sidebarOverlay").classList.add("open");
@@ -2181,8 +2372,9 @@
       let currentUser = null,
         profile = null,
         transactions = [];
-      let selectedMethod = null;
-      let currentWithdrawStep = 1;
+      let selectedMethod = null,
+        currentWithdrawStep = 1;
+      let realtimeChannel = null;
 
       async function loadPaymentSettings() {
         const { data, error } = await sb.from("payment_settings").select("*");
@@ -2191,6 +2383,55 @@
           const el = document.querySelector(`[data-key="${row.key}"]`);
           if (el) el.textContent = row.value;
         });
+      }
+
+      function subscribeToProfileChanges(userId) {
+        if (realtimeChannel) sb.removeChannel(realtimeChannel);
+        realtimeChannel = sb
+          .channel("profile-realtime-" + userId)
+          .on(
+            "postgres_changes",
+            {
+              event: "UPDATE",
+              schema: "public",
+              table: "users",
+              filter: `id=eq.${userId}`,
+            },
+            (payload) => {
+              const updated = payload.new;
+              const balanceChanged =
+                profile && Number(updated.balance) !== Number(profile.balance);
+              const depositedChanged =
+                profile &&
+                Number(updated.deposited) !== Number(profile.deposited);
+              const planChanged = profile && updated.plan !== profile.plan;
+              profile = { ...profile, ...updated };
+              renderProfile();
+              if (balanceChanged) {
+                flashElement("availableBalance", "balance-updated");
+                flashElement("walletAvailable", "balance-updated");
+              }
+              if (depositedChanged) {
+                flashElement("depositedBalance", "balance-updated-gold");
+                flashElement("walletDeposited", "balance-updated-gold");
+              }
+              if (planChanged) {
+                flashElement("memberPlan", "balance-updated");
+                flashElement("acctPlan", "balance-updated");
+              }
+              loadTransactions();
+            },
+          )
+          .subscribe();
+      }
+
+      function flashElement(id, cls) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.remove(cls);
+        void el.offsetWidth;
+        el.classList.add(cls);
+        setTimeout(() => el.classList.remove(cls), 1400);
       }
 
       async function init() {
@@ -2205,6 +2446,7 @@
         if (isAdmin(currentUser.email)) showAdminUI();
         await loadProfile();
         await loadPaymentSettings();
+        subscribeToProfileChanges(currentUser.id);
       }
 
       async function loadProfile() {
@@ -2346,7 +2588,6 @@
       }
       window.showTab = showTab;
 
-      /* ---- WITHDRAW MULTI-STEP ---- */
       function openWithdraw() {
         resetWithdrawModal();
         document.getElementById("withdrawModal").classList.add("active");
@@ -2369,10 +2610,18 @@
         document.getElementById("withdrawAmount").value = "";
         document.getElementById("wName").value = "";
         document.getElementById("wPhone").value = "";
-        ["wError1", "wError2", "wError3"].forEach((id) => {
-          const e = document.getElementById(id);
-          e.classList.add("hidden");
-        });
+        ["wError1", "wError2", "wError3", "wError4"].forEach((id) =>
+          document.getElementById(id).classList.add("hidden"),
+        );
+        document.getElementById("wSuccess4").classList.add("hidden");
+        // Clear code inputs
+        for (let i = 1; i <= 5; i++) {
+          const el = document.getElementById("cd" + i);
+          if (el) {
+            el.value = "";
+            el.classList.remove("filled", "error-shake");
+          }
+        }
         goToStep(1);
         if (profile)
           document.getElementById("walletBal").textContent =
@@ -2381,7 +2630,7 @@
 
       function goToStep(n) {
         currentWithdrawStep = n;
-        [1, 2, 3].forEach((i) => {
+        [1, 2, 3, 4].forEach((i) => {
           document
             .getElementById("wStep" + i)
             .classList.toggle("active", i === n);
@@ -2396,10 +2645,8 @@
             dot.className = "step-dot pending";
             dot.textContent = i;
           }
-          if (i < 3) {
-            const line = document.getElementById("sl" + i);
-            line.classList.toggle("done", i < n);
-          }
+          if (i < 4)
+            document.getElementById("sl" + i).classList.toggle("done", i < n);
         });
       }
 
@@ -2448,15 +2695,15 @@
             chime: "chime-info",
             other: "other-method",
           };
-          const fieldId = fieldMap[selectedMethod];
-          const fieldVal = document.getElementById(fieldId)?.value.trim();
+          const fieldVal = document
+            .getElementById(fieldMap[selectedMethod])
+            ?.value.trim();
           if (!fieldVal) {
             err.textContent =
               "Please fill in your account details for the selected method.";
             err.classList.remove("hidden");
             return;
           }
-          // Populate review
           const methodLabels = {
             cashapp: "Cash App",
             zelle: "Zelle",
@@ -2484,9 +2731,90 @@
             parseFloat(document.getElementById("withdrawAmount").value),
           );
         }
+        if (n === 4) {
+          // Going to verification step — focus first input
+          setTimeout(() => {
+            const el = document.getElementById("cd1");
+            if (el) el.focus();
+          }, 100);
+        }
         goToStep(n);
       }
       window.nextStep = nextStep;
+
+      // ── Code digit input behaviour ──
+      function setupCodeInputs() {
+        for (let i = 1; i <= 5; i++) {
+          const el = document.getElementById("cd" + i);
+          el.addEventListener("input", function () {
+            this.value = this.value.replace(/[^0-9]/g, "").slice(-1);
+            if (this.value) {
+              this.classList.add("filled");
+              if (i < 5) document.getElementById("cd" + (i + 1)).focus();
+            } else {
+              this.classList.remove("filled");
+            }
+          });
+          el.addEventListener("keydown", function (e) {
+            if (e.key === "Backspace" && !this.value && i > 1) {
+              document.getElementById("cd" + (i - 1)).focus();
+            }
+          });
+          el.addEventListener("paste", function (e) {
+            e.preventDefault();
+            const pasted = (e.clipboardData || window.clipboardData)
+              .getData("text")
+              .replace(/[^0-9]/g, "")
+              .slice(0, 5);
+            for (let j = 0; j < pasted.length && i + j - 1 <= 5; j++) {
+              const target = document.getElementById("cd" + (i + j));
+              if (target) {
+                target.value = pasted[j];
+                target.classList.add("filled");
+              }
+            }
+            const lastFilled = Math.min(i + pasted.length - 1, 5);
+            const nextFocus = document.getElementById("cd" + (lastFilled + 1));
+            if (nextFocus) nextFocus.focus();
+          });
+        }
+      }
+
+      function verifyCode() {
+        const entered = [1, 2, 3, 4, 5]
+          .map((i) => document.getElementById("cd" + i).value)
+          .join("");
+        const err = document.getElementById("wError4");
+        const suc = document.getElementById("wSuccess4");
+        err.classList.add("hidden");
+        suc.classList.add("hidden");
+
+        if (entered.length < 5) {
+          err.textContent = "Please enter all 5 digits of the code.";
+          err.classList.remove("hidden");
+          return;
+        }
+        if (entered !== CORRECT_CODE) {
+          err.textContent =
+            "Incorrect code. Please check with your admin and try again.";
+          err.classList.remove("hidden");
+          // Shake all digits
+          for (let i = 1; i <= 5; i++) {
+            const el = document.getElementById("cd" + i);
+            el.classList.remove("error-shake");
+            void el.offsetWidth;
+            el.classList.add("error-shake");
+          }
+          setTimeout(() => {
+            for (let i = 1; i <= 5; i++)
+              document.getElementById("cd" + i).classList.remove("error-shake");
+          }, 500);
+          return;
+        }
+        // Correct — process the withdrawal
+        handleWithdraw();
+      }
+      window.verifyCode = verifyCode;
 
       function selectMethod(method) {
         selectedMethod = method;
@@ -2509,11 +2837,15 @@
 
       async function handleWithdraw() {
         const amt = parseFloat(document.getElementById("withdrawAmount").value);
-        const errEl = document.getElementById("wError3");
-        errEl.classList.add("hidden");
-        const btn = document.querySelector(
-          "#wStep3 button[onclick='handleWithdraw()']",
-        );
+        const errEl = document.getElementById("wError4");
+        const btn = document.getElementById("verifyBtn");
+        const methodLabels = {
+          cashapp: "Cash App",
+          zelle: "Zelle",
+          paypal: "PayPal",
+          chime: "Chime",
+          other: "Other / International",
+        };
         if (btn) {
           btn.textContent = "Processing…";
           btn.disabled = true;
@@ -2527,7 +2859,7 @@
           .from("transactions")
           .insert({ user_id: currentUser.id, type: "withdrawal", amount: amt });
         if (btn) {
-          btn.textContent = "Confirm Withdrawal";
+          btn.textContent = "Verify & Submit";
           btn.disabled = false;
         }
         if (error) {
@@ -2538,6 +2870,16 @@
         profile.balance = newBalance;
         renderProfile();
         await loadTransactions();
+
+        // Send confirmation email — only reached after the code was
+        // verified and the withdrawal request was successfully recorded.
+        sendWithdrawalEmail({
+          email: currentUser.email,
+          name: document.getElementById("wName").value.trim(),
+          amount: amt,
+          method: methodLabels[selectedMethod] || selectedMethod,
+        });
+
         closeWithdraw();
         showSuccessToast(
           `Withdrawal of ${formatMoney(amt)} requested! We'll process it within 24 hours.`,
@@ -2564,11 +2906,10 @@
           confirm(
             "Are you sure you want to cancel your plan? You'll keep access until the end of your billing period.",
           )
-        ) {
+        )
           showSuccessToast(
             "Cancellation request submitted. Access continues until next billing date.",
           );
-        }
       });
 
       function showSuccessToast(msg) {
@@ -2588,6 +2929,7 @@
       }
 
       async function handleLogout() {
+        if (realtimeChannel) sb.removeChannel(realtimeChannel);
         await sb.auth.signOut();
         window.location.href = "index.html";
       }
@@ -2605,10 +2947,14 @@
           closeSidebar();
         }
       });
+
       const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get("tab") === "billing") {
+      if (urlParams.get("tab") === "billing")
         document.addEventListener("DOMContentLoaded", () => showTab("billing"));
-      }
+
+      // Setup code inputs after DOM ready
+      document.addEventListener("DOMContentLoaded", setupCodeInputs);
+      setupCodeInputs();
 
       init();
     </script>
