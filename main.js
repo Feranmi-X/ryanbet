@@ -9,6 +9,12 @@ const sb = createClient(
 );
 
 // ============================================================
+// LOGIN STATE (global)
+// ============================================================
+window.isLoggedIn    = false;
+window.currentUserId = null;
+
+// ============================================================
 // THEME TOGGLE
 // ============================================================
 const htmlEl = document.documentElement;
@@ -125,11 +131,29 @@ function showError(el, msg) {
 }
 
 // ============================================================
+// PRICING / PLAN BUTTONS
+// If the user is already logged in, skip the signup modal entirely
+// and send them straight to their dashboard (optionally flagging
+// which plan they clicked so the dashboard can preselect/upgrade it).
+// ============================================================
+function handlePlanClick(plan) {
+  if (window.isLoggedIn) {
+    window.location.href = "dashboard.html" + (plan ? ("?plan=" + encodeURIComponent(plan)) : "");
+  } else {
+    openModal("signup");
+  }
+}
+window.handlePlanClick = handlePlanClick;
+
+// ============================================================
 // NAV: Update for logged-in user
 // Uses cloneNode to wipe old listeners before attaching new ones,
 // so logout + reload always restores the original Log In / Join VIP state.
 // ============================================================
 function updateNavForLoggedInUser(profile, user) {
+  window.isLoggedIn    = true;
+  window.currentUserId = user?.id || null;
+
   const navFlag        = document.getElementById("navFlag");
   const navAdminLi     = document.getElementById("navAdminLi");
   const navAdminMobile = document.getElementById("navAdminMobile");
@@ -286,6 +310,8 @@ window.handleSignup = handleSignup;
 // LOGOUT
 // ============================================================
 async function handleLogout() {
+  window.isLoggedIn    = false;
+  window.currentUserId = null;
   await sb.auth.signOut();
   window.location.href = "index.html";
 }
