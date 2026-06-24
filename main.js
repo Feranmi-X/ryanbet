@@ -4,8 +4,8 @@
 const { createClient } = supabase;
 
 const sb = createClient(
-  "https://yrzhstrevycvchaozjrj.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlyemhzdHJldnljdmNoYW96anJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMzkyODYsImV4cCI6MjA5NzcxNTI4Nn0.NPzbARyaViAmcr4wMSxKHHE6BTCINgliPUlRwRJVDTI"
+  "https://huqvxcprpkccfmdxzxte.supabase.co",   // replace this
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh1cXZ4Y3BycGtjY2ZtZHh6eHRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyOTkyNDYsImV4cCI6MjA5Nzg3NTI0Nn0.ToYzZofYXcvs6hZ7QJ8wtSdrif6bUUKqliQYMc9Tz_c"       // replace this
 );
 
 // ============================================================
@@ -263,7 +263,7 @@ async function handleSignup() {
   if (!pass || pass.length < 8)       { showError(errEl, "Password must be at least 8 characters."); return; }
 
   const selectedOption = countryEl.options[countryEl.selectedIndex];
-  const flag = selectedOption ? selectedOption.text.split(" ")[0] : "🌍";
+const flag = selectedOption ? selectedOption.text.split(" ")[0] : "🌍";
 
   const btn = document.querySelector("#signupForm button[onclick='handleSignup()']");
   if (btn) { btn.textContent = "Creating account…"; btn.disabled = true; }
