@@ -498,12 +498,13 @@
       id="authModal"
       class="modal-overlay fixed inset-0 bg-black/70 z-[1000] flex items-center justify-center p-4 overflow-y-auto"
     >
+      <!-- FIXED: max-h + overflow-y-auto so form never overflows the viewport -->
       <div
-        class="modal-box bg-[var(--modal-bg,#1a1d28)] border border-white/7 rounded-2xl p-8 w-full max-w-[460px] relative shadow-2xl my-4"
+        class="modal-box bg-[var(--modal-bg,#1a1d28)] border border-white/7 rounded-2xl p-6 w-full max-w-[460px] relative shadow-2xl my-4 max-h-[92vh] overflow-y-auto"
       >
         <button
           id="modalClose"
-          class="absolute top-5 right-5 bg-[#252836] border border-white/10 text-[#8a8fa8] w-8 h-8 rounded-full cursor-pointer flex items-center justify-center text-base hover:bg-[#e8232a] hover:text-white hover:border-[#e8232a] transition-all"
+          class="absolute top-4 right-4 bg-[#252836] border border-white/10 text-[#8a8fa8] w-8 h-8 rounded-full cursor-pointer flex items-center justify-center text-base hover:bg-[#e8232a] hover:text-white hover:border-[#e8232a] transition-all"
         >
           ✕
         </button>
@@ -522,13 +523,13 @@
           ></span
           >RYANBET
         </div>
-        <p id="modalSub" class="text-sm text-[#8a8fa8] mb-6">
+        <p id="modalSub" class="text-sm text-[#8a8fa8] mb-5">
           Welcome back — your picks are waiting.
         </p>
 
         <!-- Tabs -->
         <div
-          class="flex rounded-xl overflow-hidden border border-white/10 mb-7"
+          class="flex rounded-xl overflow-hidden border border-white/10 mb-5"
         >
           <button
             id="tabLogin"
@@ -608,9 +609,9 @@
           </div>
         </div>
 
-        <!-- Signup Form -->
+        <!-- Signup Form — referral code field removed, layout fits viewport -->
         <div id="signupForm" class="hidden">
-          <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="grid grid-cols-2 gap-3 mb-3">
             <div class="flex flex-col gap-2">
               <label class="text-xs font-bold text-[#8a8fa8] tracking-widest"
                 >FIRST NAME</label
@@ -634,7 +635,7 @@
               />
             </div>
           </div>
-          <div class="flex flex-col gap-2 mb-4">
+          <div class="flex flex-col gap-2 mb-3">
             <label class="text-xs font-bold text-[#8a8fa8] tracking-widest"
               >EMAIL ADDRESS</label
             >
@@ -645,7 +646,7 @@
               class="bg-[var(--input-bg,#252836)] border border-white/10 text-[#f7f8fc] text-[0.95rem] px-[14px] py-[11px] rounded-xl placeholder-[#5c6077] w-full transition-all"
             />
           </div>
-          <div class="flex flex-col gap-2 mb-4">
+          <div class="flex flex-col gap-2 mb-3">
             <label class="text-xs font-bold text-[#8a8fa8] tracking-widest"
               >COUNTRY</label
             >
@@ -676,7 +677,7 @@
               <option value="OTHER" data-flag="🌍">🌍 Other</option>
             </select>
           </div>
-          <div class="flex flex-col gap-2 mb-4">
+          <div class="flex flex-col gap-2 mb-3">
             <label class="text-xs font-bold text-[#8a8fa8] tracking-widest"
               >PASSWORD</label
             >
@@ -697,7 +698,7 @@
             </div>
             <div
               id="passStrength"
-              class="h-1 rounded-full bg-[#252836] overflow-hidden mt-1"
+              class="h-1 rounded-full bg-[#252836] overflow-hidden mt-0.5"
             >
               <div
                 id="passBar"
@@ -706,23 +707,9 @@
               ></div>
             </div>
           </div>
-          <div class="flex flex-col gap-2 mb-4">
-            <label class="text-xs font-bold text-[#8a8fa8] tracking-widest"
-              >REFERRAL CODE
-              <span
-                class="text-[#5c6077] font-normal normal-case tracking-normal"
-                >(optional)</span
-              ></label
-            >
-            <input
-              type="text"
-              placeholder="e.g. RYAN2025"
-              class="bg-[var(--input-bg,#252836)] border border-white/10 text-[#f7f8fc] text-[0.95rem] px-[14px] py-[11px] rounded-xl placeholder-[#5c6077] w-full transition-all"
-            />
-          </div>
           <div
             id="signupError"
-            class="hidden bg-[rgba(232,35,42,0.1)] border border-[rgba(232,35,42,0.3)] text-[#ff6b70] text-xs px-4 py-3 rounded-xl mb-4"
+            class="hidden bg-[rgba(232,35,42,0.1)] border border-[rgba(232,35,42,0.3)] text-[#ff6b70] text-xs px-4 py-3 rounded-xl mb-3"
           ></div>
           <button
             onclick="handleSignup()"
@@ -735,7 +722,7 @@
             <a href="#" class="text-[#e8232a]">Terms of Service</a> and confirm
             you are 21+.
           </p>
-          <div class="text-center mt-4 text-xs text-[#8a8fa8]">
+          <div class="text-center mt-3 text-xs text-[#8a8fa8]">
             Already have an account?
             <a
               href="#"
