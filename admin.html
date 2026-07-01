@@ -343,8 +343,14 @@
           >
             💳 Payment Settings
           </button>
+          <button
+            class="admin-tab"
+            id="tab-btn-gameprofile"
+            onclick="switchAdminTab('gameprofile')"
+          >
+            🖼️ Game Profile IDs
+          </button>
         </div>
-
         <!-- USERS TAB -->
         <div id="admin-tab-users">
           <div class="flex flex-wrap items-center gap-3 mb-4">
@@ -710,6 +716,112 @@
               table in Supabase and are immediately visible to all logged-in
               users on their Billing page.
             </p>
+          </div>
+        </div>
+
+        <!-- GAME PROFILE ID TAB -->
+        <div id="admin-tab-gameprofile" class="">
+          <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+            <div>
+              <h1 class="font-bebas text-[1.8rem] tracking-wide">
+                Game Profile ID Uploads
+              </h1>
+              <p class="text-sm text-[#8a8fa8] mt-1">
+                Review member-submitted game profile ID photos. Approve or
+                decline each submission.
+              </p>
+            </div>
+            <button
+              onclick="loadGameProfileUploads()"
+              class="border border-white/10 text-[#f7f8fc] bg-transparent text-xs font-bold px-3 py-2 rounded-lg hover:bg-white/5 transition-all"
+            >
+              ⟳ Refresh
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-[#1a1d28] border border-white/7 rounded-xl p-5">
+              <div
+                class="font-mono-ibm text-[.62rem] tracking-widest text-[#5c6077] uppercase mb-1"
+              >
+                Pending Review
+              </div>
+              <div
+                id="gpPendingCt"
+                class="font-bebas text-[2rem] text-[#f4c430]"
+              >
+                —
+              </div>
+            </div>
+            <div class="bg-[#1a1d28] border border-white/7 rounded-xl p-5">
+              <div
+                class="font-mono-ibm text-[.62rem] tracking-widest text-[#5c6077] uppercase mb-1"
+              >
+                Approved
+              </div>
+              <div
+                id="gpApprovedCt"
+                class="font-bebas text-[2rem] text-[#2ecc8a]"
+              >
+                —
+              </div>
+            </div>
+            <div class="bg-[#1a1d28] border border-white/7 rounded-xl p-5">
+              <div
+                class="font-mono-ibm text-[.62rem] tracking-widest text-[#5c6077] uppercase mb-1"
+              >
+                Total Submissions
+              </div>
+              <div id="gpTotalCt" class="font-bebas text-[2rem]">—</div>
+            </div>
+          </div>
+
+          <div
+            class="bg-[#1a1d28] border border-white/7 rounded-2xl overflow-hidden"
+          >
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="border-b border-white/7">
+                    <th
+                      class="text-left px-4 py-3 font-mono-ibm text-[.62rem] tracking-widest text-[#5c6077] uppercase"
+                    >
+                      User
+                    </th>
+                    <th
+                      class="text-left px-4 py-3 font-mono-ibm text-[.62rem] tracking-widest text-[#5c6077] uppercase"
+                    >
+                      Photo
+                    </th>
+                    <th
+                      class="text-left px-4 py-3 font-mono-ibm text-[.62rem] tracking-widest text-[#5c6077] uppercase"
+                    >
+                      Submitted
+                    </th>
+                    <th
+                      class="text-left px-4 py-3 font-mono-ibm text-[.62rem] tracking-widest text-[#5c6077] uppercase"
+                    >
+                      Status
+                    </th>
+                    <th
+                      class="text-left px-4 py-3 font-mono-ibm text-[.62rem] tracking-widest text-[#5c6077] uppercase"
+                    >
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody id="gpTbody">
+                  <tr>
+                    <td
+                      colspan="5"
+                      class="px-4 py-8 text-center text-[#5c6077]"
+                    >
+                      Loading…
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </main>
@@ -1120,6 +1232,89 @@
         }
       }
       window.saveAllPaymentSettings = saveAllPaymentSettings;
+      async function loadGameProfileUploads() {
+        const tbody = document.getElementById("gpTbody");
+        tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-[#5c6077]">Loading…</td></tr>`;
+
+        const { data, error } = await sb
+          .from("game_profile_uploads")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-[#ff6b70]">Failed to load: ${error.message}</td></tr>`;
+          return;
+        }
+
+        const rows = data || [];
+        const pending = rows.filter((r) => r.status === "pending").length;
+        const approved = rows.filter((r) => r.status === "approved").length;
+        document.getElementById("gpPendingCt").textContent = pending;
+        document.getElementById("gpApprovedCt").textContent = approved;
+        document.getElementById("gpTotalCt").textContent = rows.length;
+
+        if (!rows.length) {
+          tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-[#5c6077]">No submissions yet.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = rows
+          .map((r) => {
+            const date = r.created_at
+              ? new Date(r.created_at).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })
+              : "—";
+            const statusBadge =
+              {
+                pending: `<span class="font-mono-ibm text-[.6rem] tracking-widest bg-[rgba(244,196,48,.1)] border border-[rgba(244,196,48,.3)] text-[#f4c430] px-2 py-1 rounded-full">PENDING</span>`,
+                approved: `<span class="font-mono-ibm text-[.6rem] tracking-widest bg-[rgba(46,204,138,.1)] border border-[rgba(46,204,138,.3)] text-[#2ecc8a] px-2 py-1 rounded-full">APPROVED</span>`,
+                declined: `<span class="font-mono-ibm text-[.6rem] tracking-widest bg-[rgba(232,35,42,.1)] border border-[rgba(232,35,42,.3)] text-[#ff6b70] px-2 py-1 rounded-full">DECLINED</span>`,
+              }[r.status] || "";
+
+            const photo = r.image_url
+              ? `<img src="${r.image_url}" alt="Game profile ID" style="width:72px;height:46px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid rgba(255,255,255,.12)" onclick="window.open('${r.image_url}','_blank')" />`
+              : `<span class="text-[#5c6077] text-xs">No image</span>`;
+
+            const actions =
+              r.status === "pending"
+                ? `<div class="flex gap-2">
+              <button onclick="reviewGameProfileUpload('${r.id}','approved')" class="bg-[#2ecc8a] text-[#0c0e14] text-xs font-bold px-3 py-2 rounded-lg cursor-pointer hover:opacity-90 transition-all">Approve</button>
+              <button onclick="reviewGameProfileUpload('${r.id}','declined')" class="bg-transparent border border-[rgba(232,35,42,.4)] text-[#ff6b70] text-xs font-bold px-3 py-2 rounded-lg cursor-pointer hover:bg-[rgba(232,35,42,.08)] transition-all">Decline</button>
+            </div>`
+                : `<button onclick="reviewGameProfileUpload('${r.id}','pending')" class="border border-white/10 text-[#8a8fa8] bg-transparent text-xs font-bold px-3 py-2 rounded-lg cursor-pointer hover:bg-white/5 transition-all">Reset</button>`;
+
+            return `<tr class="border-b border-white/5 hover:bg-white/2 transition-colors">
+        <td class="px-4 py-3 font-semibold">
+          <div>${r.user_name || "—"}</div>
+          <div class="text-[#5c6077] text-xs font-mono-ibm">${r.user_email || ""}</div>
+        </td>
+        <td class="px-4 py-3">${photo}</td>
+        <td class="px-4 py-3 text-xs text-[#5c6077]">${date}</td>
+        <td class="px-4 py-3">${statusBadge}</td>
+        <td class="px-4 py-3">${actions}</td>
+      </tr>`;
+          })
+          .join("");
+      }
+      window.loadGameProfileUploads = loadGameProfileUploads;
+
+      async function reviewGameProfileUpload(id, status) {
+        const { error } = await sb
+          .from("game_profile_uploads")
+          .update({ status, reviewed_at: new Date().toISOString() })
+          .eq("id", id);
+
+        if (error) {
+          showToast("Failed to update: " + error.message, true);
+          return;
+        }
+        showToast("Marked as " + status);
+        loadGameProfileUploads();
+      }
+      window.reviewGameProfileUpload = reviewGameProfileUpload;
     </script>
   </body>
 </html>

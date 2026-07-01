@@ -86,40 +86,15 @@ function closeModal() {
   modal.classList.remove("active");
   document.body.style.overflow = "";
 }
-function switchTab(tab) {
-  const loginForm  = document.getElementById("loginForm");
-  const signupForm = document.getElementById("signupForm");
-  if (!loginForm || !signupForm) return;
-
-  loginForm.style.display = tab === "login" ? "block" : "none";
-  signupForm.classList.toggle("hidden", tab !== "signup");
-
-  const tabLogin  = document.getElementById("tabLogin");
-  const tabSignup = document.getElementById("tabSignup");
-  if (tab === "login") {
-    if (tabLogin)  tabLogin.style.cssText  = "background:#e8232a;color:#fff;";
-    if (tabSignup) tabSignup.style.cssText = "background:var(--input-bg,#252836);color:#8a8fa8;";
-  } else {
-    if (tabSignup) tabSignup.style.cssText = "background:#e8232a;color:#fff;";
-    if (tabLogin)  tabLogin.style.cssText  = "background:var(--input-bg,#252836);color:#8a8fa8;";
-  }
-
-  const modalSub = document.getElementById("modalSub");
-  if (modalSub) {
-    modalSub.textContent = tab === "login"
-      ? "Welcome back — your picks are waiting."
-      : "Create your VIP account.";
-  }
-
-  const loginError  = document.getElementById("loginError");
-  const signupError = document.getElementById("signupError");
-  if (loginError)  loginError.classList.add("hidden");
-  if (signupError) signupError.classList.add("hidden");
+function switchAdminTab(name) {
+  ["users", "payments", "gameprofile"].forEach((t) => {
+    document.getElementById("admin-tab-" + t).classList.toggle("hidden", t !== name);
+    document.getElementById("tab-btn-" + t).classList.toggle("active", t === name);
+  });
+  if (name === "payments") loadPaymentSettings();
+  if (name === "gameprofile") loadGameProfileUploads();
 }
-
-window.openModal  = openModal;
-window.closeModal = closeModal;
-window.switchTab  = switchTab;
+window.switchAdminTab = switchAdminTab;
 
 // ============================================================
 // HELPER: Show Error

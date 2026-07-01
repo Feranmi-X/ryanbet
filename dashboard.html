@@ -1293,6 +1293,75 @@
                 >
               </div>
             </div>
+            <!-- ── Game Profile ID Upload ── -->
+            <div
+              class="bg-[#1a1d28] border border-white/7 rounded-2xl p-5 md:p-6 lg:col-span-2 mt-5"
+            >
+              <div
+                class="flex items-center justify-between flex-wrap gap-3 mb-3"
+              >
+                <div>
+                  <p
+                    class="font-mono-ibm text-[.63rem] tracking-widest text-[#e8232a] uppercase mb-1"
+                  >
+                    Verification
+                  </p>
+                  <h2 class="font-bold text-base">Upload Game Profile ID</h2>
+                </div>
+                <span
+                  id="gp-status-badge"
+                  class="font-mono-ibm text-[.6rem] tracking-widest px-3 py-1 rounded-full border bg-white/5 border-white/10 text-[#8a8fa8]"
+                  >NOT SUBMITTED</span
+                >
+              </div>
+              <p class="text-xs text-[#8a8fa8] mb-4 leading-relaxed">
+                Upload a screenshot of your game profile ID from your gallery so
+                we can verify your account. Reviewed within 24 hours.
+              </p>
+              <div class="flex flex-col sm:flex-row items-stretch gap-3">
+                <label
+                  class="flex-1 flex items-center gap-3 border border-dashed border-white/15 rounded-xl px-4 py-3 cursor-pointer hover:border-[#e8232a]/50 transition-colors"
+                >
+                  <span class="text-xl">🖼️</span>
+                  <span
+                    id="gp-file-label"
+                    class="text-[#5c6077] text-sm truncate"
+                    >Choose a photo from your gallery…</span
+                  >
+                  <input
+                    type="file"
+                    id="gp-file-input"
+                    accept="image/*"
+                    class="hidden"
+                    onchange="onGameProfileFileSelected(this)"
+                  />
+                </label>
+                <button
+                  onclick="uploadGameProfileId()"
+                  id="gp-upload-btn"
+                  class="flex-shrink-0 bg-[#e8232a] text-white font-bold text-sm px-6 py-3 rounded-xl cursor-pointer hover:bg-[#ff2e35] transition-all whitespace-nowrap"
+                >
+                  Upload
+                </button>
+              </div>
+              <div
+                id="gp-upload-err"
+                class="hidden text-[#ff6b70] text-xs mt-3"
+              ></div>
+              <div id="gp-preview-wrap" class="hidden mt-4">
+                <div
+                  class="font-mono-ibm text-[.6rem] tracking-widest text-[#5c6077] uppercase mb-2"
+                >
+                  Last Submitted
+                </div>
+                <img
+                  id="gp-preview-img"
+                  src=""
+                  alt="Submitted game profile ID"
+                  class="w-32 h-20 object-cover rounded-lg border border-white/10"
+                />
+              </div>
+            </div>
             <div
               class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8"
             >
@@ -2384,6 +2453,181 @@
           if (el) el.textContent = row.value;
         });
       }
+      const GP_BUCKET = "game-profile-ids";
+      let selectedGpFile = null;
+
+      function onGameProfileFileSelected(input) {
+        const file = input.files && input.files[0];
+        const label = document.getElementById("gp-file-label");
+        const err = document.getElementById("gp-upload-err");
+        err.classList.add("hidden");
+
+        if (!file) {
+          selectedGpFile = null;
+          label.textContent = "Choose a photo from your gallery…";
+          return;
+        }
+        if (!file.type.startsWith("image/")) {
+          err.textContent = "⚠ Please select an image file (JPG, PNG, etc).";
+          err.classList.remove("hidden");
+          input.value = "";
+          selectedGpFile = null;
+          return;
+        }
+        if (file.size > 8 * 1024 * 1024) {
+          err.textContent = "⚠ File is too large. Max size is 8MB.";
+          err.classList.remove("hidden");
+          input.value = "";
+          selectedGpFile = null;
+          return;
+        }
+
+        selectedGpFile = file;
+        label.textContent = file.name;
+        label.classList.remove("text-[#5c6077]");
+        label.classList.add("text-[#f7f8fc]");
+      }
+      window.onGameProfileFileSelected = onGameProfileFileSelected;
+
+      async function uploadGameProfileId() {
+        const err = document.getElementById("gp-upload-err");
+        const btn = document.getElementById("gp-upload-btn");
+        err.classList.add("hidden");
+
+        if (!currentUser) {
+          err.textContent = "⚠ Please sign in first.";
+          err.classList.remove("hidden");
+          return;
+        }
+        if (!selectedGpFile) {
+          err.textContent = "⚠ Please choose a photo first.";
+          err.classList.remove("hidden");
+          return;
+        }
+
+        const originalLabel = btn.textContent;
+        btn.textContent = "Uploading…";
+        btn.disabled = true;
+
+        try {
+          const ext = (
+            selectedGpFile.name.split(".").pop() || "jpg"
+          ).toLowerCase();
+          const path = `${currentUser.id}/${Date.now()}.${ext}`;
+
+          const { error: upErr } = await sb.storage
+            .from(GP_BUCKET)
+            .upload(path, selectedGpFile, {
+              upsert: true,
+              contentType: selectedGpFile.type,
+            });
+
+          if (upErr) {
+            err.textContent = "⚠ Upload failed: " + upErr.message;
+            err.classList.remove("hidden");
+            return;
+          }
+
+          const { data: pub } = sb.storage.from(GP_BUCKET).getPublicUrl(path);
+          const fileUrl = pub && pub.publicUrl ? pub.publicUrl : "";
+
+          const fullName =
+            `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim();
+
+          const { error: dbErr } = await sb
+            .from("game_profile_uploads")
+            .insert([
+              {
+                user_id: currentUser.id,
+                user_name: fullName || currentUser.email,
+                user_email: currentUser.email,
+                file_path: path,
+                image_url: fileUrl,
+                status: "pending",
+              },
+            ]);
+
+          if (dbErr) {
+            err.textContent = "⚠ " + dbErr.message;
+            err.classList.remove("hidden");
+            return;
+          }
+
+          document.getElementById("gp-preview-img").src = fileUrl;
+          document.getElementById("gp-preview-wrap").classList.remove("hidden");
+          setGpStatusBadge("pending");
+          showSuccessToast("Game profile ID submitted for review ✅");
+
+          selectedGpFile = null;
+          document.getElementById("gp-file-input").value = "";
+          const label = document.getElementById("gp-file-label");
+          label.textContent = "Choose a photo from your gallery…";
+          label.classList.add("text-[#5c6077]");
+          label.classList.remove("text-[#f7f8fc]");
+        } catch (e) {
+          err.textContent = "⚠ Connection error. Please try again.";
+          err.classList.remove("hidden");
+        } finally {
+          btn.textContent = originalLabel;
+          btn.disabled = false;
+        }
+      }
+      window.uploadGameProfileId = uploadGameProfileId;
+
+      function setGpStatusBadge(status) {
+        const badge = document.getElementById("gp-status-badge");
+        if (!badge) return;
+        const map = {
+          pending: {
+            text: "PENDING REVIEW",
+            cls: "bg-[rgba(244,196,48,.1)] border-[rgba(244,196,48,.3)] text-[#f4c430]",
+          },
+          approved: {
+            text: "VERIFIED ✓",
+            cls: "bg-[rgba(46,204,138,.1)] border-[rgba(46,204,138,.3)] text-[#2ecc8a]",
+          },
+          declined: {
+            text: "DECLINED",
+            cls: "bg-[rgba(232,35,42,.1)] border-[rgba(232,35,42,.3)] text-[#ff6b70]",
+          },
+          none: {
+            text: "NOT SUBMITTED",
+            cls: "bg-white/5 border-white/10 text-[#8a8fa8]",
+          },
+        };
+        const s = map[status] || map.none;
+        badge.textContent = s.text;
+        badge.className =
+          "font-mono-ibm text-[.6rem] tracking-widest px-3 py-1 rounded-full border " +
+          s.cls;
+      }
+
+      async function loadGameProfileStatus() {
+        if (!currentUser) return;
+        try {
+          const { data, error } = await sb
+            .from("game_profile_uploads")
+            .select("*")
+            .eq("user_id", currentUser.id)
+            .order("created_at", { ascending: false })
+            .limit(1);
+
+          if (error || !data || !data.length) {
+            setGpStatusBadge("none");
+            return;
+          }
+          const rec = data[0];
+          setGpStatusBadge(rec.status);
+          if (rec.image_url) {
+            document.getElementById("gp-preview-img").src = rec.image_url;
+            document
+              .getElementById("gp-preview-wrap")
+              .classList.remove("hidden");
+          }
+        } catch (e) {
+          setGpStatusBadge("none");
+        }
+      }
 
       function subscribeToProfileChanges(userId) {
         if (realtimeChannel) sb.removeChannel(realtimeChannel);
@@ -2957,6 +3201,21 @@
       setupCodeInputs();
 
       init();
+      async function init() {
+        const {
+          data: { session },
+        } = await sb.auth.getSession();
+        if (!session) {
+          window.location.href = "index.html";
+          return;
+        }
+        currentUser = session.user;
+        if (isAdmin(currentUser.email)) showAdminUI();
+        await loadProfile();
+        await loadGameProfileStatus(); // ← add this line
+        await loadPaymentSettings();
+        subscribeToProfileChanges(currentUser.id);
+      }
     </script>
   </body>
 </html>
