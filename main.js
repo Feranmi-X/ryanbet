@@ -86,6 +86,44 @@ function closeModal() {
   modal.classList.remove("active");
   document.body.style.overflow = "";
 }
+function closeModal() {
+  if (!modal) return;
+  modal.classList.remove("active");
+  document.body.style.overflow = "";
+}
+
+// ============================================================
+// AUTH MODAL — SWITCH BETWEEN LOGIN / SIGNUP TABS
+// ============================================================
+function switchTab(tab) {
+  const isLogin = tab === "login";
+
+  const loginForm  = document.getElementById("loginForm");
+  const signupForm = document.getElementById("signupForm");
+  if (loginForm)  loginForm.classList.toggle("hidden", !isLogin);
+  if (signupForm) signupForm.classList.toggle("hidden", isLogin);
+
+  const tabLogin  = document.getElementById("tabLogin");
+  const tabSignup = document.getElementById("tabSignup");
+  if (tabLogin && tabSignup) {
+    tabLogin.style.background  = isLogin ? "#e8232a" : "transparent";
+    tabLogin.style.color       = isLogin ? "#fff"    : "#8a8fa8";
+    tabSignup.style.background = isLogin ? "transparent" : "#e8232a";
+    tabSignup.style.color      = isLogin ? "#8a8fa8"      : "#fff";
+  }
+
+  const modalSub = document.getElementById("modalSub");
+  if (modalSub) {
+    modalSub.textContent = isLogin
+      ? "Welcome back — your picks are waiting."
+      : "Create your account and get instant VIP access.";
+  }
+
+  // Clear any leftover error messages when switching tabs
+  document.getElementById("loginError")?.classList.add("hidden");
+  document.getElementById("signupError")?.classList.add("hidden");
+}
+window.switchTab = switchTab;
 function switchAdminTab(name) {
   ["users", "payments", "gameprofile"].forEach((t) => {
     document.getElementById("admin-tab-" + t).classList.toggle("hidden", t !== name);
